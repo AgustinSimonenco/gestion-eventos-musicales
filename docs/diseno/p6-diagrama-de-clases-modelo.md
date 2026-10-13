@@ -1,4 +1,4 @@
-# Diagrama de clases inicial
+# p6. Diagrama de clases del modelo
 
 Versión INICIAL de las clases principales de la propuesta: Usuario, Cliente, Organizador, Evento, Artista, Entrada, Pago, PagoTarjeta y PagoTransferencia.
 

@@ -1,5 +1,7 @@
 # Casos de uso
 
+> Forman parte de la Documentación de Análisis. Se cubren 15 casos de uso (mínimo exigido: 3 por integrante = 12).
+
 ## Diagrama de casos de uso
 
 ```mermaid
@@ -17,7 +19,7 @@ flowchart LR
         CU03([CU03 Crear evento])
         CU04([CU04 Modificar evento])
         CU05([CU05 Cancelar evento])
-        CU06([CU06 Asignar artistas])
+        CU06([CU06 Asignar artistas a un evento])
         CU07([CU07 Consultar eventos disponibles])
         CU08([CU08 Consultar disponibilidad de entradas])
         CU09([CU09 Agregar entradas al carrito])
@@ -25,6 +27,8 @@ flowchart LR
         CU11([CU11 Realizar pago])
         CU12([CU12 Generar comprobante])
         CU13([CU13 Consultar historial de compras])
+        CU14([CU14 Cancelar compra])
+        CU15([CU15 Gestionar artistas])
     end
 
     U --- CU01
@@ -33,16 +37,19 @@ flowchart LR
     O --- CU04
     O --- CU05
     O --- CU06
+    O --- CU15
     C --- CU07
     C --- CU09
     C --- CU10
     C --- CU13
+    C --- CU14
 
     CU08 -. extend .-> CU07
     CU09 -. include .-> CU08
     CU10 -. include .-> CU11
     CU10 -. include .-> CU12
     CU12 -. extend .-> CU13
+    CU14 -. extend .-> CU13
 ```
 
 **Relaciones entre casos de uso**
@@ -52,6 +59,7 @@ flowchart LR
 - **CU09 incluye CU08:** antes de agregar entradas al carrito siempre se verifica que haya disponibilidad.
 - **CU10 incluye CU11 y CU12:** confirmar una compra siempre implica pagar y, si el pago se aprueba, generar el comprobante.
 - **CU12 extiende CU13:** desde el historial el cliente *puede* volver a ver o descargar el comprobante de una compra.
+- **CU14 extiende CU13:** desde el historial el cliente *puede* cancelar una compra.
 
 ## Resumen
 
@@ -70,6 +78,8 @@ flowchart LR
 | CU11 | Realizar pago | Cliente |
 | CU12 | Generar comprobante | Cliente (lo dispara el sistema) |
 | CU13 | Consultar historial de compras | Cliente |
+| CU14 | Cancelar compra | Cliente |
+| CU15 | Gestionar artistas | Organizador |
 
 ## Descripción
 
@@ -121,12 +131,17 @@ flowchart LR
 
 ### CU06 — Asignar artistas a un evento
 - **Actor:** Organizador
-- **Descripción:** Asocia uno o más artistas a un evento.
+- **Descripción:** Asocia o desasocia uno o más artistas a un evento.
+- **Precondición:** El evento existe, fue creado por ese organizador y no está cancelado.
 - **Flujo principal:**
   1. El organizador selecciona un evento.
-  2. Selecciona o registra uno o más artistas.
-  3. El sistema asocia los artistas al evento.
-- **Alternativo:** 2a. El artista ya está asignado → el sistema lo informa.
+  2. El sistema muestra los artistas ya asignados y los artistas registrados.
+  3. El organizador selecciona uno o más artistas para asignar.
+  4. El sistema asocia los artistas al evento.
+- **Alternativos:**
+  - 3a. El artista ya está asignado → el sistema lo informa.
+  - 3b. El artista no está registrado → se ejecuta CU15 para darlo de alta.
+  - 3c. El organizador quiere quitar un artista del evento → el sistema lo desasocia, siempre que el evento conserve al menos un artista.
 
 ### CU07 — Consultar eventos disponibles
 - **Actor:** Cliente
@@ -163,6 +178,7 @@ flowchart LR
   5. El sistema muestra el carrito actualizado con el total acumulado.
 - **Alternativos:**
   - 2a. La cantidad ingresada es 0 o negativa → el sistema informa el error y vuelve a pedirla.
+  - 3a. La cantidad supera las entradas disponibles → el sistema informa cuántas quedan y permite ingresar otra cantidad.
   - 5a. El cliente quiere quitar un ítem o cambiar una cantidad → el sistema actualiza el carrito y recalcula el total.
 
 ### CU10 — Confirmar compra
@@ -173,14 +189,16 @@ flowchart LR
   1. El cliente solicita confirmar la compra.
   2. El sistema muestra el resumen: eventos, cantidades, subtotales y total.
   3. El cliente acepta el resumen.
-  4. Se ejecuta Realizar Pago.
+  4. El sistema verifica que cada evento siga activo y con capacidad suficiente.
+  5. Se ejecuta Realizar Pago.
   6. El sistema registra la compra y genera una entrada por cada unidad comprada, asociada al cliente y al evento.
   7. Se genera el comprobante.
-  8. El carrito se vacía. 
+  8. El carrito se vacía.
 - **Alternativos:**
   - 1a. El carrito está vacío → el sistema informa que no hay entradas para comprar.
   - 3a. El cliente no acepta el resumen → se realizan modificaciones.
-  - 4a. El pago es rechazado → no se registra la compra ni se generan entradas; el carrito se conserva para reintentar.
+  - 4a. Un evento fue cancelado o ya no tiene capacidad suficiente → el sistema informa qué ítem tiene problemas y vuelve al carrito sin cobrar.
+  - 5a. El pago es rechazado → no se registra la compra ni se generan entradas; el carrito se conserva para reintentar.
 
 ### CU11 — Realizar pago
 - **Actor:** Cliente
@@ -224,3 +242,33 @@ flowchart LR
   1. El cliente solicita su historial.
   2. El sistema muestra las entradas con evento, fecha de compra, precio y estado del pago.
 - **Alternativo:** 2a. El cliente no tiene compras → el sistema informa que el historial está vacío.
+
+### CU14 — Cancelar compra
+- **Actor:** Cliente
+- **Descripción:** Permite cancelar una compra realizada, anulando sus entradas.
+- **Precondición:** El cliente inició sesión y tiene al menos una compra confirmada.
+- **Flujo principal:**
+  1. El cliente selecciona una compra desde su historial.
+  2. El sistema verifica que la fecha del evento no haya pasado.
+  3. El sistema muestra el detalle y el monto a reintegrar, y pide confirmación.
+  4. El cliente confirma la cancelación.
+  5. El sistema anula las entradas de la compra y libera su capacidad en el evento.
+  6. El sistema marca la compra como CANCELADA y registra el reintegro.
+- **Alternativos:**
+  - 2a. El evento ya se realizó → el sistema informa que la compra no se puede cancelar.
+  - 2b. La compra ya estaba cancelada → el sistema lo informa.
+  - 4a. El cliente no confirma → no se realiza ningún cambio.
+
+### CU15 — Gestionar artistas
+- **Actor:** Organizador
+- **Descripción:** Permite dar de alta, modificar y dar de baja artistas.
+- **Precondición:** El organizador inició sesión.
+- **Flujo principal:**
+  1. El organizador accede al listado de artistas.
+  2. Elige dar de alta un artista nuevo e ingresa nombre y género musical.
+  3. El sistema valida los datos.
+  4. El sistema registra el artista.
+- **Alternativos:**
+  - 2a. Elige modificar un artista → edita sus datos y el sistema los guarda.
+  - 2b. Elige dar de baja un artista → el sistema lo elimina, siempre que no esté asignado a un evento activo.
+  - 3a. Datos inválidos o artista ya existente → el sistema informa el error.
