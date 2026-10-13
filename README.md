@@ -15,6 +15,7 @@ Software para administrar recitales: gestión de eventos, asignación de artista
 
 ## Documentación
 
+- [Objetivo y alcances](docs/objetivo-y-alcances.md)
 - [Requerimientos](docs/requerimientos.md)
 - [Casos de uso](docs/casos-de-uso.md)
 - [Diagrama de clases inicial](docs/diagrama-de-clases.md)
