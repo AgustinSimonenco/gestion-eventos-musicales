@@ -1,6 +1,6 @@
 # Diagrama de clases inicial
 
-Versión preliminar a partir de las clases principales de la propuesta: Usuario, Cliente, Organizador, Evento, Artista, Entrada, Pago, PagoTarjeta y PagoTransferencia.
+Versión INICIAL de las clases principales de la propuesta: Usuario, Cliente, Organizador, Evento, Artista, Entrada, Pago, PagoTarjeta y PagoTransferencia.
 
 ```mermaid
 classDiagram
