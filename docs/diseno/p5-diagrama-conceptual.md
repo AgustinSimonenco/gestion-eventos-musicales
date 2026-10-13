@@ -1,8 +1,5 @@
 # p5. Diagrama conceptual
 
-El diagrama conceptual (modelo de dominio) muestra **los conceptos del problema y cómo se relacionan**, sin entrar en cómo se van a programar. Por eso no incluye métodos, tipos de datos, visibilidad, pantallas ni controladores: esos detalles aparecen recién en el diagrama de clases del modelo (p6) y en el de vista y controlador (p7).
-
-Los conceptos se obtuvieron a partir de los sustantivos de los [casos de uso](../analisis/casos-de-uso.md) y de los [requerimientos](../analisis/p3-requerimientos-funcionales.md).
 
 ## Diagrama
 
