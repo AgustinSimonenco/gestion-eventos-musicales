@@ -9,20 +9,7 @@ El Sistema de Gestión de Eventos Musicales es una **aplicación de escritorio e
 
 Toda la información (usuarios, eventos, artistas, compras, pagos) se guarda en archivos, de modo que se conserva al cerrar y volver a abrir la aplicación.
 
-## Módulos principales
 
-| Módulo | Responsabilidad | Casos de uso |
-|---|---|---|
-| **Usuarios** | Registro, inicio de sesión y control de acceso según el rol. | CU01, CU02 |
-| **Eventos y artistas** | Alta, modificación y cancelación de eventos; gestión de artistas y su asignación a eventos; control de capacidad. | CU03 – CU06, CU15 |
-| **Ventas** | Consulta de eventos y disponibilidad, carrito, confirmación y cancelación de compras, historial. | CU07 – CU10, CU13, CU14 |
-| **Pagos** | Procesamiento (simulado) de pagos con distintos medios: tarjeta y transferencia. | CU11 |
-| **Comprobantes** | Emisión del comprobante de cada compra confirmada. | CU12 |
-| **Persistencia** | Guardar y recuperar los datos del sistema desde archivos. | (soporte de todos) |
-
-## Arquitectura general
-
-El sistema sigue el patrón **MVC (Modelo – Vista – Controlador)**, con una capa de persistencia separada:
 
 ```mermaid
 flowchart TB
@@ -54,7 +41,6 @@ flowchart TB
     Controlador -->|actualiza| Vista
     Controlador -->|guarda / recupera| Persistencia
 ```
-
 - **Vista:** muestra la información y captura las acciones del usuario. No contiene lógica de negocio.
 - **Controladores:** reciben las acciones de la vista, coordinan cada caso de uso y devuelven el resultado a la vista.
 - **Modelo:** contiene las reglas del negocio (por ejemplo, que no se vendan más entradas que la capacidad del evento).
@@ -70,10 +56,4 @@ Los errores (capacidad agotada, pago rechazado, datos inválidos, etc.) se repre
 4. Si el pago se aprueba, el sistema genera las entradas y el comprobante, y descuenta la disponibilidad del evento.
 5. El cliente puede ver luego su historial de compras o cancelar una compra antes de la fecha del evento.
 
-## Tecnologías
 
-- **Lenguaje:** Java 8 o superior, programación orientada a objetos.
-- **Interfaz gráfica:** Swing (incluida en el JDK).
-- **Persistencia:** archivos, usando solo la biblioteca estándar de Java.
-- **Documentación:** UML (diagramas en Mermaid), Javadoc.
-- **Pruebas:** JUnit.
