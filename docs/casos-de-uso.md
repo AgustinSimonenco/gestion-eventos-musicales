@@ -97,7 +97,7 @@ flowchart LR
 - **Precondición:** El organizador inició sesión.
 - **Flujo principal:**
   1. El organizador ingresa los datos del evento.
-  2. El sistema valida los datos (fecha futura, capacidad > 0, precio > 0).
+  2. El sistema valida los datos.
   3. El sistema crea el evento en estado ACTIVO.
 - **Alternativo:** 2a. Datos inválidos → el sistema informa el error.
 
@@ -135,17 +135,15 @@ flowchart LR
   1. El cliente solicita el listado.
   2. El sistema muestra los eventos activos con nombre, fecha, lugar, artistas, precio y entradas disponibles.
 - **Alternativo:** 2a. No hay eventos activos → el sistema informa que no hay eventos disponibles.
-- **Puntos de extensión:** el cliente puede elegir un evento para ver su disponibilidad detallada (CU08).
 
 ### CU08 — Consultar disponibilidad de entradas
 - **Actor:** Cliente
 - **Descripción:** Permite conocer la cantidad de entradas disponibles para un evento determinado.
 - **Precondición:** El cliente inició sesión y el evento existe.
-- **Postcondición:** El cliente conoce cuántas entradas quedan y su precio. No se modifica ningún dato.
 - **Flujo principal:**
-  1. El cliente selecciona un evento (desde el listado de CU07 o al intentar agregarlo al carrito en CU09).
+  1. El cliente selecciona un evento.
   2. El sistema verifica el estado del evento.
-  3. El sistema calcula las entradas disponibles: `capacidad − entradas vendidas`.
+  3. El sistema calcula las entradas disponibles.
   4. El sistema muestra nombre, fecha, lugar, artistas, precio por entrada y cantidad disponible.
 - **Alternativos:**
   - 2a. El evento está CANCELADO → el sistema informa que el evento fue cancelado y no tiene entradas a la venta.
@@ -156,45 +154,38 @@ flowchart LR
 - **Actor:** Cliente
 - **Descripción:** Permite seleccionar entradas para un evento y agregarlas al carrito de compra.
 - **Precondición:** El cliente inició sesión.
-- **Postcondición:** El carrito del cliente contiene el ítem (evento + cantidad) con su subtotal. Las entradas **no** quedan reservadas: la disponibilidad se vuelve a verificar al confirmar la compra (CU10).
+- **Postcondición:** El carrito del cliente contiene el ítem (evento + cantidad) con su subtotal.
 - **Flujo principal:**
   1. El cliente selecciona un evento.
   2. El cliente indica la cantidad de entradas que quiere.
-  3. Se ejecuta **CU08 — Consultar disponibilidad de entradas**.
-  4. El sistema verifica que la cantidad pedida no supere las entradas disponibles.
-  5. El sistema agrega el ítem al carrito y calcula el subtotal (`cantidad × precio`).
-  6. El sistema muestra el carrito actualizado con el total acumulado.
+  3. Se consulta la disponibilidad de entradas.
+  4. El sistema agrega el ítem al carrito y calcula el subtotal.
+  5. El sistema muestra el carrito actualizado con el total acumulado.
 - **Alternativos:**
   - 2a. La cantidad ingresada es 0 o negativa → el sistema informa el error y vuelve a pedirla.
-  - 4a. La cantidad supera las entradas disponibles → el sistema informa cuántas quedan y permite ingresar otra cantidad.
-  - 5a. El evento ya estaba en el carrito → el sistema suma la nueva cantidad al ítem existente (volviendo a validar el paso 4).
-  - 6a. El cliente quiere quitar un ítem o cambiar una cantidad → el sistema actualiza el carrito y recalcula el total.
+  - 5a. El cliente quiere quitar un ítem o cambiar una cantidad → el sistema actualiza el carrito y recalcula el total.
 
 ### CU10 — Confirmar compra
 - **Actor:** Cliente
 - **Descripción:** Permite confirmar las entradas del carrito y generar una operación de compra.
 - **Precondición:** El cliente inició sesión y su carrito tiene al menos un ítem.
-- **Postcondición (éxito):** Se registra la compra, se generan las entradas asociadas al cliente, se descuenta la disponibilidad de cada evento, se emite el comprobante y el carrito queda vacío.
 - **Flujo principal:**
   1. El cliente solicita confirmar la compra.
   2. El sistema muestra el resumen: eventos, cantidades, subtotales y total.
   3. El cliente acepta el resumen.
-  4. El sistema vuelve a verificar, para cada ítem, que el evento siga ACTIVO y haya capacidad.
-  5. Se ejecuta **CU11 — Realizar pago** por el total.
+  4. Se ejecuta Realizar Pago.
   6. El sistema registra la compra y genera una entrada por cada unidad comprada, asociada al cliente y al evento.
-  7. Se ejecuta **CU12 — Generar comprobante**.
-  8. El sistema vacía el carrito.
+  7. Se genera el comprobante.
+  8. El carrito se vacía. 
 - **Alternativos:**
   - 1a. El carrito está vacío → el sistema informa que no hay entradas para comprar.
-  - 3a. El cliente no acepta el resumen → vuelve al carrito para modificarlo (CU09).
-  - 4a. Un evento fue cancelado o ya no tiene capacidad suficiente desde que se agregó al carrito → el sistema informa qué ítem tiene problemas y vuelve al carrito sin cobrar nada.
-  - 5a. El pago es rechazado → no se registra la compra ni se generan entradas; el carrito se conserva para reintentar.
+  - 3a. El cliente no acepta el resumen → se realizan modificaciones.
+  - 4a. El pago es rechazado → no se registra la compra ni se generan entradas; el carrito se conserva para reintentar.
 
 ### CU11 — Realizar pago
 - **Actor:** Cliente
 - **Descripción:** Concreta el pago de una compra mediante distintos medios (tarjeta o transferencia).
-- **Precondición:** Se está confirmando una compra (CU10) y se conoce el monto total.
-- **Postcondición:** Queda registrado un pago con estado APROBADO o RECHAZADO.
+- **Precondición:** Se está confirmando una compra y se conoce el monto total.
 - **Flujo principal:**
   1. El sistema muestra el monto a pagar y los medios de pago disponibles.
   2. El cliente elige el medio de pago.
@@ -213,7 +204,6 @@ flowchart LR
 - **Actor:** Cliente (lo dispara automáticamente el sistema al aprobarse el pago)
 - **Descripción:** Permite emitir un comprobante asociado a una compra confirmada.
 - **Precondición:** Existe una compra con pago APROBADO.
-- **Postcondición:** El comprobante queda asociado a la compra y se puede consultar después desde el historial (CU13).
 - **Flujo principal:**
   1. El sistema genera un número de comprobante único.
   2. El sistema arma el comprobante con:
@@ -226,7 +216,6 @@ flowchart LR
   4. El sistema guarda el comprobante asociado a la compra.
 - **Alternativos:**
   - 1a. La compra no tiene un pago aprobado → el sistema no genera el comprobante e informa el error.
-  - 3a. El cliente lo solicita desde el historial (extensión de CU13) → el sistema muestra el comprobante ya generado, sin crear uno nuevo.
 
 ### CU13 — Consultar historial de compras
 - **Actor:** Cliente
@@ -235,4 +224,3 @@ flowchart LR
   1. El cliente solicita su historial.
   2. El sistema muestra las entradas con evento, fecha de compra, precio y estado del pago.
 - **Alternativo:** 2a. El cliente no tiene compras → el sistema informa que el historial está vacío.
-- **Puntos de extensión:** el cliente puede seleccionar una compra para ver su comprobante (CU12).
