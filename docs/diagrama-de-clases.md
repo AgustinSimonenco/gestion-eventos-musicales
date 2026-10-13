@@ -6,6 +6,7 @@ Para esta versión, se hace uso de los casos de uso: CU01, CU02, CU03, CU04 y CU
 <img width="605" height="418" alt="image" src="https://github.com/user-attachments/assets/a5fc9c5d-d01d-44dc-a018-ad1983d73c96" />
 
 Relaciones básicas:
+
 <img width="429" height="347" alt="image" src="https://github.com/user-attachments/assets/da8cf108-d3c0-44b1-b198-8ef9fb1d16e6" />
 
 
