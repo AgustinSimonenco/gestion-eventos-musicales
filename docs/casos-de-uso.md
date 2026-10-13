@@ -19,9 +19,12 @@ flowchart LR
         CU05([CU05 Cancelar evento])
         CU06([CU06 Asignar artistas])
         CU07([CU07 Consultar eventos disponibles])
-        CU08([CU08 Comprar entrada])
-        CU09([CU09 Realizar pago])
-        CU10([CU10 Consultar historial de compras])
+        CU08([CU08 Consultar entradas disponibles])
+        CU09([CU09 Agregar entradas al carrito])
+        CU10([CU10 Confirmar compra])
+        CU11([CU11 Realizar pago])
+        CU12([CU12 Generar comprobante])
+        CU13([CU13 Consultar historial de compras])
     end
 
     U --- CU01
@@ -33,6 +36,9 @@ flowchart LR
     C --- CU07
     C --- CU08
     C --- CU10
+    C --- CU11
+    C --- CU12
+    C --- CU13
     CU08 -. include .-> CU09
 ```
 
@@ -50,9 +56,12 @@ flowchart LR
 | CU05 | Cancelar evento | Organizador |
 | CU06 | Asignar artistas a un evento | Organizador |
 | CU07 | Consultar eventos disponibles | Cliente |
-| CU08 | Comprar entrada | Cliente |
-| CU09 | Realizar pago | Cliente |
-| CU10 | Consultar historial de compras | Cliente |
+| CU08 | Consultar Disponibilidad de Entradas | Cliente |
+| CU09 | Agregar entradas al carrito | Cliente |
+| CU10 | Confirmar compra | Cliente |
+| CU11 | Realizar pago | Cliente |
+| CU12 | Generar comprobante | Cliente |
+| CU13 | Consultar historial de compras | Cliente |
 
 ## Descripción
 
@@ -118,10 +127,26 @@ flowchart LR
   1. El cliente solicita el listado.
   2. El sistema muestra los eventos activos con nombre, fecha, lugar, artistas, precio y entradas disponibles.
 
-### CU08 — Comprar entrada
+### CU08 — Consultar disponibilidad de entradas
 - **Actor:** Cliente
-- **Descripción:** Permite adquirir entradas para un evento seleccionado.
+- **Descripción:** Permite conocer la cantidad de entradas disponibles para un evento determinado.
 - **Precondición:** El cliente inició sesión.
+- **Flujo principal:**
+
+- **Alternativos:**
+
+### CU09 — Agregar entrada al carrito
+- **Actor:** Cliente
+- **Descripción:** Permite seleccionar entradas para un evento y agregarlas al carrito de compra.
+- **Precondición:** El cliente inició sesión.
+- **Flujo principal:**
+
+- **Alternativos:**
+
+### CU10 — Confirmar compra
+- **Actor:** Cliente
+- **Descripción:** Permite confirmar las entradas seleccionadas y generar una operación de compra.
+- **Precondición:** El cliente inició sesión y eligió entradas.
 - **Flujo principal:**
   1. El cliente selecciona un evento y la cantidad de entradas.
   2. El sistema verifica que el evento esté activo y haya capacidad.
@@ -129,19 +154,25 @@ flowchart LR
   4. Se ejecuta **CU09 — Realizar pago**.
   5. El sistema genera las entradas y las asocia al cliente.
 - **Alternativos:**
-  - 2a. No hay capacidad suficiente o el evento está cancelado → el sistema informa el error.
-  - 4a. El pago es rechazado → no se generan las entradas.
 
-### CU09 — Realizar pago
+### CU11 — Realizar pago
 - **Actor:** Cliente
 - **Descripción:** Concreta el pago mediante distintos medios (tarjeta o transferencia).
 - **Flujo principal:**
   1. El cliente elige el medio de pago.
   2. Ingresa los datos correspondientes.
   3. El sistema procesa el pago y lo registra como APROBADO.
-- **Alternativo:** 3a. El pago falla → se registra como RECHAZADO.
+- **Alternativo:**
+  - 3a. El pago falla → se registra como RECHAZADO.
+  - 2a. No hay capacidad suficiente o el evento está cancelado → el sistema informa el error.
+  - 4a. El pago es rechazado → no se generan las entradas
 
-### CU10 — Consultar historial de compras
+### CU12 — Generar comprobante
+- **Actor:** Cliente
+- **Descripción:** Permite emitir un comprobante asociado a una compra confirmada.
+- **Flujo principal:**
+
+### CU13 — Consultar historial de compras
 - **Actor:** Cliente
 - **Descripción:** Muestra todas las entradas adquiridas anteriormente.
 - **Flujo principal:**
