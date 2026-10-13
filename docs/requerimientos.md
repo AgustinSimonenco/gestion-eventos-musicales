@@ -16,11 +16,14 @@
 
 ### Entradas y pagos (Cliente)
 - **RF09** — El cliente debe poder consultar el listado de eventos activos con entradas disponibles.
-- **RF10** — El cliente debe poder comprar una o más entradas para un evento.
-- **RF11** — No se pueden vender más entradas que la capacidad del evento.
-- **RF12** — El cliente debe poder pagar con tarjeta o con transferencia.
-- **RF13** — Una entrada queda confirmada solo cuando su pago fue aprobado.
-- **RF14** — El cliente debe poder consultar su historial de compras.
+- **RF10** — El cliente debe poder consultar la cantidad de entradas disponibles de un evento.
+- **RF11** — El cliente debe poder agregar entradas de uno o más eventos a un carrito, modificar cantidades y quitar ítems.
+- **RF12** — El cliente debe poder confirmar la compra de todo el carrito en una sola operación.
+- **RF13** — No se pueden vender más entradas que la capacidad del evento (se verifica al agregar al carrito y de nuevo al confirmar).
+- **RF14** — El cliente debe poder pagar con tarjeta o con transferencia.
+- **RF15** — Una compra queda confirmada solo cuando su pago fue aprobado.
+- **RF16** — Al confirmarse una compra, el sistema debe emitir un comprobante con el detalle de la compra.
+- **RF17** — El cliente debe poder consultar su historial de compras y volver a ver sus comprobantes.
 
 ## Requerimientos no funcionales
 
@@ -34,4 +37,5 @@
 - ¿Se puede modificar la fecha o la capacidad de un evento que ya vendió entradas?
 - Si se cancela un evento, ¿se reintegra el dinero de las entradas vendidas?
 - ¿Hay límite de entradas por cliente?
+- ¿Agregar al carrito debería reservar las entradas por un tiempo? (Por ahora no: se revalida al confirmar.)
 - ¿Habrá distintos tipos o sectores de entrada (general, VIP, campo) con precios distintos?
