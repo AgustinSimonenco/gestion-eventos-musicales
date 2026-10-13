@@ -2,40 +2,62 @@
 
 ## Requerimientos funcionales
 
-### Usuarios
-- **RF01** — El sistema debe permitir registrar usuarios (clientes u organizadores) con nombre, email y contraseña.
-- **RF02** — El sistema debe permitir iniciar sesión con email y contraseña registrados.
-- **RF03** — No puede haber dos usuarios con el mismo email.
+### 
+**RF01** – Registrarse
+El sistema debe permitir registrar nuevos usuarios.
 
-### Eventos (Organizador)
-- **RF04** — El organizador debe poder crear un evento indicando nombre, fecha, lugar, capacidad y precio de entrada.
-- **RF05** — El organizador debe poder modificar los datos de un evento existente.
-- **RF06** — El organizador debe poder cancelar un evento; un evento cancelado no admite nuevas ventas.
-- **RF07** — El organizador debe poder asignar uno o más artistas a un evento.
-- **RF08** — Un organizador solo puede modificar o cancelar los eventos que creó.
+**RF02** – Iniciar sesión
+El sistema debe permitir autenticar usuarios mediante correo electrónico y contraseña.
 
-### Entradas y pagos (Cliente)
-- **RF09** — El cliente debe poder consultar el listado de eventos activos con entradas disponibles.
-- **RF10** — El cliente debe poder consultar la cantidad de entradas disponibles de un evento.
-- **RF11** — El cliente debe poder agregar entradas de uno o más eventos a un carrito, modificar cantidades y quitar ítems.
-- **RF12** — El cliente debe poder confirmar la compra de todo el carrito en una sola operación.
-- **RF13** — No se pueden vender más entradas que la capacidad del evento (se verifica al agregar al carrito y de nuevo al confirmar).
-- **RF14** — El cliente debe poder pagar con tarjeta o con transferencia.
-- **RF15** — Una compra queda confirmada solo cuando su pago fue aprobado.
-- **RF16** — Al confirmarse una compra, el sistema debe emitir un comprobante con el detalle de la compra.
-- **RF17** — El cliente debe poder consultar su historial de compras y volver a ver sus comprobantes.
+**RF03** – Crear evento
+El organizador debe poder registrar nuevos eventos musicales.
+
+**RF04** – Modificar evento
+El organizador debe poder actualizar la información de eventos existentes.
+
+**RF05** – Cancelar evento
+El organizador debe poder cancelar eventos activos.
+
+**RF06** – Gestionar artistas
+El organizador debe poder asociar y desasociar artistas a un evento.
+
+**RF07** – Consultar eventos disponibles
+Los clientes deben poder visualizar los eventos activos y disponibles.
+
+**RF08** – Consultar disponibilidad de entradas
+Los clientes deben poder consultar la cantidad de entradas disponibles de cada evento.
+
+**RF09** – Agregar entrada al carrito
+Los clientes deben poder seleccionar entradas y agregarlas a un carrito de compra.
+
+**RF10** – Confirmar compra
+Los clientes deben poder confirmar una compra utilizando las entradas seleccionadas.
+
+**RF11** – Realizar pago
+El sistema debe permitir registrar pagos mediante distintos medios de pago.
+
+**RF12** – Generar comprobante
+El sistema debe generar un comprobante asociado a una compra realizada correctamente.
+
+**RF13** – Consultar historial de compras
+Los clientes deben poder visualizar las compras realizadas anteriormente.
+
+**RF14** – Controlar capacidad del evento
+El sistema debe impedir la emisión de entradas cuando la capacidad máxima del evento haya sido alcanzada.
 
 ## Requerimientos no funcionales
 
-- **RNF01** — Desarrollado en Java aplicando programación orientada a objetos (encapsulamiento, herencia, polimorfismo).
-- **RNF02** — Interfaz por consola (a definir si se agrega interfaz gráfica).
-- **RNF03** — Los datos se guardan en memoria (a definir si se agrega persistencia en archivos).
-- **RNF04** — El sistema debe validar los datos ingresados y mostrar mensajes de error claros.
+- **RFN01** - La aplicación debe ser simple e intuitiva para usuarios sin conocimientos técnicos.
+- **RNF02** - El sistema deberá mantener coherencia entre eventos, entradas, pagos y compras registradas.
+- **RNF03** - Los datos se guardan en memoria.
+- **RNF04** - El sistema debe validar los datos ingresados y mostrar mensajes de error claros.
+- **RFN05** - Cada usuario solo podrá acceder a las funcionalidades correspondientes a su rol (cliente u organizador).
+- **RFN06** - Las funcionalidades comunes deberán implementarse evitando duplicación de código mediante herencia, composición e interfaces.
+- **RFN07** - La solución deberá desarrollarse siguiendo los principios de Programación Orientada a Objetos para facilitar futuras modificaciones.
 
-## Pendientes a definir con el equipo
 
-- ¿Se puede modificar la fecha o la capacidad de un evento que ya vendió entradas?
-- Si se cancela un evento, ¿se reintegra el dinero de las entradas vendidas?
+## Pendientes 
+
+- Si se cancela un evento ¿se reintegra el dinero de las entradas vendidas?
 - ¿Hay límite de entradas por cliente?
-- ¿Agregar al carrito debería reservar las entradas por un tiempo? (Por ahora no: se revalida al confirmar.)
 - ¿Habrá distintos tipos o sectores de entrada (general, VIP, campo) con precios distintos?
