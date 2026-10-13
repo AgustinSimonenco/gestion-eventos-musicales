@@ -2,6 +2,10 @@
 
 Versión INICIAL de las clases principales de la propuesta: Usuario, Cliente, Organizador, Evento, Artista, Entrada, Pago, PagoTarjeta y PagoTransferencia.
 
+Para esta versión, se hace uso de los casos de uso: CU01, CU02, CU03, CU04 y CU05.
+<img width="605" height="418" alt="image" src="https://github.com/user-attachments/assets/a5fc9c5d-d01d-44dc-a018-ad1983d73c96" />
+
+
 ```mermaid
 classDiagram
     direction TB
