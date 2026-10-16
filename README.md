@@ -43,10 +43,10 @@ Aplicación de escritorio para administrar recitales: gestión de eventos, asign
 - JUnit para pruebas y Javadoc para documentación
 - UML con Mermaid (los diagramas se ven directamente en GitHub)
 
-## Próximos pasos
+## Forma de trabajo
 
-- [ ] Consensuar la documentación de análisis con el equipo docente
-- [ ] Actualizar el diagrama de clases del modelo (p6): carrito, compra, comprobante, interfaces y jerarquía de excepciones
-- [ ] Diagramas p7, p8 y p9
-- [ ] Crear la estructura del proyecto Java
-- [ ] Implementar los casos de uso
+- [PLAN.md](PLAN.md): etapas y fechas pactadas.
+- [bitacora/](bitacora/): qué se hizo cada día, por qué, y las decisiones que el equipo tiene que responder.
+- [CLAUDE.md](CLAUDE.md): reglas del proyecto y procedimiento nocturno que sigue Claude.
+- Rama `desarrollo`: avances diarios, pendientes de revisión. Rama `main`: lo aprobado por el equipo.
+- El equipo no toca el repo entre las 23:30 y las 06:00.
