@@ -72,4 +72,4 @@ Para recuperar atrasos y aplicar correcciones. Si no hay atrasos:
 ## Pendientes de aclarar
 
 - [ ] ¿Qué significa "Seguimiento II: punto A al punto I"? Agustín le pregunta al profesor. Cuando se sepa, se ajustan las etapas.
-- [ ] Copiar el jar de JUnit en `lib/` (Claude no descarga archivos por su cuenta). Es necesario antes de E13.
+- [x] JUnit disponible: `lib/junit-platform-console-standalone-1.11.4.jar` (JUnit 5, compatible con Java 8).
