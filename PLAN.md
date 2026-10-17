@@ -19,7 +19,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
 
 ### Diseño (para el Seguimiento II)
 
-- [ ] **E1 · 17/10 — Diagrama de clases del modelo (p6)**
+- [x] **E1 · 17/10 — Diagrama de clases del modelo (p6)**
   - Rehacer el p6 para que sea consistente con el p5: Carrito, ItemCarrito, Compra, Entrada, Comprobante y Pago con sus subclases.
   - Agregar la interfaz `MedioDePago`, la interfaz de persistencia y la jerarquía de excepciones.
   - Indicar los patrones usados.
