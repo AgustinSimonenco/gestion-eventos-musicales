@@ -347,7 +347,8 @@ classDiagram
 - **`DatosSistema`** (paquete `modelo`) agrupa todo lo que se guarda: usuarios, eventos y artistas. Las compras no van en una lista aparte, porque cada `Cliente` ya tiene las suyas. También genera los números de id (un solo contador para todo, así nunca se repiten).
   - **No es una God class:** solo guarda las listas y hace las búsquedas que necesitan recorrerlas todas (por ejemplo, ver si un email ya existe). Las reglas de cada objeto están en su propia clase (`Evento`, `Carrito`, `Compra`).
 - **`Persistencia`** es la interfaz que usan los controladores para cargar y guardar. No saben si los datos van a un archivo, a una base de datos o a otro lado.
-- **`PersistenciaArchivo`** es la implementación que guarda todo en **un archivo** usando solo la biblioteca estándar. Si el archivo no existe (primera ejecución), `cargar()` devuelve un `DatosSistema` vacío. El formato del archivo está en discusión (ver bitácora del 17/10, D-001).
+- **`PersistenciaArchivo`** es la implementación que guarda todo en **un archivo** usando solo la biblioteca estándar. Si el archivo no existe (primera ejecución), `cargar()` devuelve un `DatosSistema` vacío.
+  - **Formato (D-001, aprobado el 17/10): serialización de Java.** `guardar()` escribe el `DatosSistema` entero con `ObjectOutputStream` y `cargar()` lo lee con `ObjectInputStream`. Por eso todas las clases del modelo que se guardan implementan `java.io.Serializable` (se omite en los diagramas para no llenarlos de flechas). La ventaja es que las referencias entre objetos se conservan solas: una `Entrada` sigue apuntando al mismo `Evento` después de cargar.
 - **Cuándo se guarda:** el controlador llama a `guardar` después de cada operación que cambia datos (registrar, crear evento, comprar, cancelar…). Así, si se cierra la aplicación, no se pierde nada.
 
 ## 4. Jerarquía de excepciones
@@ -421,4 +422,4 @@ El p6 sigue al p5. Las diferencias son de detalle y se van a reflejar en el p5 e
 - **`Compra` – `Entrada` y `Compra` – `MedioDePago` son `0..*`** (en el p5 son `1..*`): mientras la compra está `PENDIENTE` todavía no tiene entradas ni pagos. Una compra `CONFIRMADA` siempre tiene al menos una entrada y un pago aprobado.
 - **`Organizador` – `Artista` (registra) no se navega en el código:** los artistas son un catálogo compartido entre organizadores y ningún caso de uso necesita saber quién cargó cada artista.
 - **`Organizador` – `Evento`:** la flecha va de `Evento` a `Organizador` (cada evento sabe quién lo organiza). Para listar los eventos de un organizador se usa `DatosSistema.getEventosDe`.
-- **`Evento` – `Artista` es `1..*`, igual que en el p5:** un evento se crea con al menos un artista. Depende de la decisión D-002 de la bitácora del 17/10.
+- **`Evento` – `Artista` es `1..*`, igual que en el p5:** un evento se crea con al menos un artista (D-002, aprobado el 17/10: CU03 pide elegir los artistas al crear el evento).

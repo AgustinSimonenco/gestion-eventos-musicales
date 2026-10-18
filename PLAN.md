@@ -28,7 +28,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
   - Pantallas y controladores con sus relaciones con el modelo.
   - Diagrama de navegación entre pantallas según el rol.
 - [ ] **E3 · 19/10 — Diagramas de secuencia (p8)**
-  - Los 5 casos de uso elegidos, con su descripción.
+  - Los 5 casos de uso elegidos (D-005, aprobado el 17/10): CU02 Iniciar sesión, CU03 Crear evento, CU09 Agregar entradas al carrito, CU10 Confirmar compra (con CU11) y CU14 Cancelar compra. Cada uno con su descripción.
   - Revisar la consistencia de p5 a p9 y actualizar el README.
 
 ### Implementación

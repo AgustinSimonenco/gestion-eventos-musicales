@@ -30,7 +30,7 @@ Aplicación de escritorio para administrar recitales: gestión de eventos, asign
 | Punto | Documento |
 |---|---|
 | p5 | [Diagrama conceptual](docs/diseno/p5-diagrama-conceptual.md) |
-| p6 | [Diagrama de clases del modelo](docs/diseno/p6-diagrama-de-clases-modelo.md) *(versión E1, pendiente de aprobación)* |
+| p6 | [Diagrama de clases del modelo](docs/diseno/p6-diagrama-de-clases-modelo.md) *(aprobado el 17/10)* |
 | p7 | Diagrama de vista y controlador *(pendiente)* |
 | p8 | Diagramas de secuencia de 5 casos de uso *(pendiente)* |
 | p9 | Diagrama de navegación de la GUI *(pendiente)* |
