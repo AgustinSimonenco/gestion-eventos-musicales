@@ -7,13 +7,13 @@ El sistema debe permitir registrar nuevos usuarios, indicando si son clientes u 
 El sistema debe permitir autenticar usuarios mediante correo electrónico y contraseña. *(CU02)*
 
 **RF03** – Crear evento
-El organizador debe poder registrar nuevos eventos musicales indicando nombre, fecha, lugar, capacidad y precio de entrada. *(CU03)*
+El organizador debe poder registrar nuevos eventos musicales indicando nombre, fecha, lugar, capacidad, precio de entrada y al menos un artista. *(CU03)*
 
 **RF04** – Modificar evento
 El organizador debe poder actualizar la información de los eventos que creó. *(CU04)*
 
 **RF05** – Cancelar evento
-El organizador debe poder cancelar eventos activos. Un evento cancelado no admite nuevas ventas. *(CU05)*
+El organizador debe poder cancelar eventos activos. Un evento cancelado no admite nuevas ventas. Las compras ya hechas no se cancelan solas: el cliente las cancela con CU14. *(CU05)*
 
 **RF06** – Asignar artistas a un evento
 El organizador debe poder asociar y desasociar artistas a un evento. *(CU06)*
@@ -50,6 +50,6 @@ El organizador debe poder dar de alta, modificar y dar de baja artistas. *(CU15)
 
 ## Pendientes
 
-- Si se cancela un evento, ¿se reintegra automáticamente el dinero de las entradas vendidas?
+- ~~Si se cancela un evento, ¿se reintegra automáticamente el dinero de las entradas vendidas?~~ **Resuelto (D-003, 17/10):** no. Solo se bloquean las ventas nuevas; el cliente cancela su compra con CU14 y ahí se registra el reintegro.
 - ¿Hay límite de entradas por cliente?
 - ¿Habrá distintos tipos o sectores de entrada (general, VIP, campo) con precios distintos? *(Por ahora queda fuera del alcance, ver p1.)*

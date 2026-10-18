@@ -103,13 +103,16 @@ flowchart LR
 
 ### CU03 — Crear evento
 - **Actor:** Organizador
-- **Descripción:** Registra un nuevo evento indicando nombre, fecha, lugar, capacidad y precio de entrada.
-- **Precondición:** El organizador inició sesión.
+- **Descripción:** Registra un nuevo evento indicando nombre, fecha, lugar, capacidad, precio de entrada y al menos un artista.
+- **Precondición:** El organizador inició sesión y hay al menos un artista registrado.
 - **Flujo principal:**
   1. El organizador ingresa los datos del evento.
-  2. El sistema valida los datos.
-  3. El sistema crea el evento en estado ACTIVO.
-- **Alternativo:** 2a. Datos inválidos → el sistema informa el error.
+  2. El sistema muestra los artistas registrados y el organizador elige uno o más.
+  3. El sistema valida los datos.
+  4. El sistema crea el evento en estado ACTIVO con los artistas elegidos.
+- **Alternativos:**
+  - 2a. No hay artistas registrados → se ejecuta CU15 para dar de alta uno.
+  - 3a. Datos inválidos o ningún artista elegido → el sistema informa el error.
 
 ### CU04 — Modificar evento
 - **Actor:** Organizador
