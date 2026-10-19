@@ -24,7 +24,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
   - Agregar la interfaz `MedioDePago`, la interfaz de persistencia y la jerarquía de excepciones.
   - Indicar los patrones usados.
   - Proponer en la bitácora el reparto de casos de uso por integrante (mínimo 3 cada uno) y los 5 casos de uso para el p8.
-- [ ] **E2 · 18/10 — Vista y controlador (p7) + navegación (p9)**
+- [x] **E2 · 18/10 — Vista y controlador (p7) + navegación (p9)**
   - Pantallas y controladores con sus relaciones con el modelo.
   - Diagrama de navegación entre pantallas según el rol.
 - [ ] **E3 · 19/10 — Diagramas de secuencia (p8)**

@@ -35,6 +35,8 @@ flowchart TB
     subgraph Controlador["Controladores"]
         C1[Controlador de usuarios]
         C2[Controlador de eventos]
+        C4[Controlador de artistas]
+        C5[Controlador de carrito]
         C3[Controlador de compras]
     end
 
