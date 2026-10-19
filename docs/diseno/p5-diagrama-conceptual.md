@@ -78,9 +78,9 @@ classDiagram
     ItemCarrito "0..*" -- "1" Evento : refiere a
 
     Cliente "1" -- "0..*" Compra : realiza
-    Compra "1" -- "1..*" Entrada : incluye
+    Compra "1" -- "0..*" Entrada : incluye
     Entrada "0..*" -- "1" Evento : es para
-    Compra "1" -- "1..*" Pago : se paga con
+    Compra "1" -- "0..*" Pago : se paga con
     Compra "1" -- "0..1" Comprobante : genera
 ```
 
@@ -95,7 +95,7 @@ classDiagram
 | **Artista** | Músico o banda que participa en uno o más eventos. |
 | **Carrito** | Selección temporal de entradas que el cliente todavía no compró. |
 | **ItemCarrito** | Una línea del carrito: un evento y la cantidad de entradas elegidas. |
-| **Compra** | Operación confirmada por un cliente. Agrupa las entradas compradas en un mismo momento. Puede estar confirmada o cancelada. |
+| **Compra** | Operación de un cliente. Agrupa las entradas compradas en un mismo momento. Puede estar pendiente (mientras se paga), confirmada o cancelada. |
 | **Entrada** | Derecho de acceso a un evento, con un código único. Puede estar válida o anulada. |
 | **Pago** | Registro del pago de una compra. Puede ser con tarjeta o por transferencia, y estar aprobado o rechazado. |
 | **Comprobante** | Constancia emitida cuando una compra se paga correctamente. |
@@ -104,7 +104,7 @@ classDiagram
 
 - **Carrito separado de Compra:** el carrito es una selección provisoria que se puede modificar; la compra es definitiva. Así lo pide el flujo de CU09 y CU10.
 - **Compra agrupa entradas:** en una sola compra se pueden adquirir varias entradas, incluso de distintos eventos, con un único pago y un único comprobante.
-- **Compra – Pago es 1 a 1..\*:** si un pago es rechazado y el cliente reintenta con otro medio, todos los intentos quedan registrados; solo uno puede estar aprobado.
+- **Compra – Pago es 1 a 0..\*:** si un pago es rechazado y el cliente reintenta con otro medio, todos los intentos quedan registrados; solo uno puede estar aprobado. Es `0..*` porque, mientras la compra está pendiente, todavía no tiene ningún pago. Lo mismo pasa con **Compra – Entrada**: las entradas se crean recién cuando se aprueba el pago. Una compra confirmada siempre tiene al menos un pago aprobado y una entrada (corregido el 19/10 para coincidir con el p6).
 - **Compra – Comprobante es 1 a 0..1:** el comprobante existe solo si la compra se pagó correctamente.
 - **ItemCarrito y Entrada se relacionan con Evento**, no con el carrito o la compra directamente, porque necesitan saber el precio y la capacidad del evento.
 - **Solo se guardan los últimos 4 dígitos de la tarjeta** en el concepto PagoTarjeta, en línea con RNF07.

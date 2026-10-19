@@ -60,6 +60,16 @@ classDiagram
     }
 
     class VentanaPrincipal {
+        +String LOGIN$
+        +String REGISTRO$
+        +String MIS_EVENTOS$
+        +String FORMULARIO_EVENTO$
+        +String ASIGNAR_ARTISTAS$
+        +String ARTISTAS$
+        +String EVENTOS_DISPONIBLES$
+        +String CARRITO$
+        +String PAGO$
+        +String HISTORIAL$
         -CardLayout tarjetas
         -JPanel contenedor
         -Map~String, Pantalla~ pantallas
@@ -208,6 +218,7 @@ Para no llenar el diagrama de flechas, la relación pantalla → controlador va 
 ### Descripción
 
 - **`VentanaPrincipal`** es la **única ventana** (`JFrame`) del programa. Usa un `CardLayout`: todas las pantallas están cargadas como "tarjetas" y se muestra una por vez con `mostrar(nombre)`. Así no se abren y cierran ventanas, y la navegación queda en un solo lugar.
+  - Los nombres de las pantallas son **constantes** (`public static final String`, subrayadas en el diagrama): `VentanaPrincipal.CARRITO`, `VentanaPrincipal.PAGO`, etc. Así, si se escribe mal un nombre, lo detecta el compilador.
   - Antes de mostrar una pantalla llama a su `actualizar()`, para que recargue los datos (por ejemplo, la tabla de eventos después de crear uno).
   - Tiene los métodos para hablar con el usuario usando `JOptionPane`: `mostrarMensaje`, `mostrarError`, `confirmar` (sí/no) y `mostrarTexto` (el comprobante, en un área de texto). Así ningún controlador usa Swing directamente.
 - **`Pantalla`** es la clase abstracta de todas las pantallas (`JPanel`). Tiene la referencia a la ventana y obliga a cada pantalla a implementar `actualizar()`. Gracias a esto, `VentanaPrincipal.mostrar` funciona igual con cualquier pantalla (**polimorfismo**).
@@ -291,6 +302,8 @@ classDiagram
         +getHistorial() List~Compra~
         +verComprobante(Compra compra) void
         +cancelarCompra(Compra compra) void
+        -procesarPago(MedioDePago pago) void
+        -armarResumen(Carrito carrito) String
     }
 
     class VentanaPrincipal
@@ -358,6 +371,9 @@ classDiagram
 - **Estado entre pantallas:** cuando un caso de uso pasa por más de una pantalla, el controlador recuerda el objeto en uso:
   - `ControladorEventos.eventoSeleccionado`: el evento que se va a modificar o al que se le asignan artistas. Si es `null`, el formulario está en modo "crear".
   - `ControladorCompras.compraEnCurso`: la `Compra` `PENDIENTE` que se crea al confirmar el carrito (CU10) y se paga en `PantallaPago` (CU11). Si se rechaza el pago, la compra sigue en curso y se puede reintentar; si se cancela el pago, se descarta (`null`) y se vuelve al carrito.
+- **Métodos privados de `ControladorCompras`:**
+  - `procesarPago(MedioDePago pago)`: lo llaman `pagarConTarjeta` y `pagarConTransferencia` después de crear el pago. Registra el pago, confirma la compra, genera el comprobante, vacía el carrito y guarda. Así esos pasos se escriben una sola vez para los dos medios.
+  - `armarResumen(Carrito carrito)`: arma el texto del resumen que se muestra antes de pagar (CU10, paso 2).
 - **`Main`** (paquete raíz) crea, en este orden: `PersistenciaArchivo`, `Sesion` (que carga los datos), `VentanaPrincipal`, los cinco controladores y las diez pantallas; registra las pantallas en la ventana y muestra `PantallaLogin`.
 
 ## 4. Trazabilidad: caso de uso → pantalla → controlador → modelo
@@ -379,7 +395,7 @@ Esta tabla es la que hay que usar en la defensa: para cada caso de uso dice por 
 | CU11 | `PantallaPago` · *Pagar* | `pagarConTarjeta` / `pagarConTransferencia` | `new PagoTarjeta` / `new PagoTransferencia`, `Compra.registrarPago`, `Compra.confirmar` |
 | CU12 | automático después de pagar; `PantallaHistorial` · *Ver comprobante* | `pagarCon...`, `verComprobante` | `Compra.generarComprobante`, `Comprobante.generarTexto` |
 | CU13 | `PantallaHistorial` (al abrirse) | `ControladorCompras.getHistorial` | `Cliente.getCompras` |
-| CU14 | `PantallaHistorial` · *Cancelar compra* | `ControladorCompras.cancelarCompra` | `Compra.cancelar` → `Entrada.anular`, `Evento.liberarLugares` |
+| CU14 | `PantallaHistorial` · *Cancelar compra* | `ControladorCompras.cancelarCompra` | `Compra.verificarCancelable`, `Compra.cancelar` → `Entrada.anular`, `Evento.liberarLugares` |
 | CU15 | `PantallaArtistas` · *Alta* / *Modificar* / *Baja* | `altaArtista`, `modificarArtista`, `bajaArtista` | `new Artista`, `Artista.modificar`, `DatosSistema.eliminarArtista` |
 
 ## Patrones y principios usados
@@ -395,6 +411,7 @@ Esta tabla es la que hay que usar en la defensa: para cada caso de uso dice por 
 
 ## Relación con otros diagramas
 
-- **p6:** los controladores solo llaman métodos que ya están en el p6. No hace falta ningún método nuevo en el modelo.
+- **p6:** los controladores solo llaman métodos que están en el p6. Al dibujar el p8 (19/10) se agregaron al p6 `Compra.verificarCancelable` y algunos *getters*.
+- **p8:** los [diagramas de secuencia](p8-diagramas-de-secuencia.md) muestran, para 5 casos de uso, el orden de las llamadas de la tabla de trazabilidad.
 - **p2:** el p2 mostraba tres controladores de ejemplo; acá son cinco, uno por módulo. El p2 se actualizó para que coincida.
 - **p9:** cada pantalla de este diagrama es un estado del diagrama de navegación.

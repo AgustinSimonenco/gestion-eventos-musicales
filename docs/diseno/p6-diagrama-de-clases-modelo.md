@@ -68,6 +68,12 @@ classDiagram
         +tieneArtista(Artista artista) boolean
         +estaActivo() boolean
         +actualizarEstado(LocalDate hoy) void
+        +getNombre() String
+        +getFecha() LocalDate
+        +getLugar() String
+        +getPrecioEntrada() double
+        +getEstado() EstadoEvento
+        +getArtistas() List~Artista~
     }
 
     class EstadoEvento {
@@ -93,6 +99,7 @@ classDiagram
         +agregarItem(Evento evento, int cantidad) void
         +cambiarCantidad(Evento evento, int cantidad) void
         +quitarItem(Evento evento) void
+        -buscarItem(Evento evento) ItemCarrito
         +verificarDisponibilidad() void
         +getTotal() double
         +getItems() List~ItemCarrito~
@@ -123,9 +130,13 @@ classDiagram
         +registrarPago(MedioDePago pago) void
         +confirmar(Carrito carrito) void
         +generarComprobante() Comprobante
+        +verificarCancelable(LocalDate hoy) void
         +cancelar(LocalDate hoy) void
         +tienePagoAprobado() boolean
         +getPagoAprobado() MedioDePago
+        +getNumero() int
+        +getFechaHora() LocalDateTime
+        +getCliente() Cliente
         +getEntradas() List~Entrada~
         +getTotal() double
         +getEstado() EstadoCompra
@@ -193,14 +204,14 @@ classDiagram
 
 | Clase | Responsabilidad |
 |---|---|
-| **Usuario** | Clase abstracta con lo común a todo usuario: nombre, email, contraseña y la validación de la contraseña. `getTipo()` es abstracto: cada subclase dice qué tipo de usuario es, y con eso el controlador decide qué menú mostrar. |
+| **Usuario** | Clase abstracta con lo común a todo usuario: nombre, email, contraseña y la validación de la contraseña. `getTipo()` es abstracto: cada subclase dice qué tipo de usuario es (`Cliente` devuelve `"CLIENTE"` y `Organizador`, `"ORGANIZADOR"`), y con eso el controlador decide qué menú mostrar. |
 | **Cliente** | Usuario que compra. Tiene **un** carrito y la lista de sus compras (su historial). |
 | **Organizador** | Usuario que crea eventos y gestiona artistas. No tiene atributos propios: cada evento guarda quién lo organiza. |
 | **Evento** | Recital. Sabe cuántas entradas le quedan, controla que no se venda más que la capacidad, y maneja sus artistas y su estado. |
 | **Artista** | Músico o banda. Catálogo compartido por todos los organizadores. |
-| **Carrito** | Selección provisoria del cliente. Calcula el total y verifica la disponibilidad de todos sus ítems. Si se agrega un evento que ya está en el carrito, se suma la cantidad en el mismo ítem. |
+| **Carrito** | Selección provisoria del cliente. Calcula el total y verifica la disponibilidad de todos sus ítems. Si se agrega un evento que ya está en el carrito, se suma la cantidad en el mismo ítem (lo busca con el método privado `buscarItem`) y se verifica la disponibilidad de la suma. |
 | **ItemCarrito** | Una línea del carrito: un evento y una cantidad. Calcula su subtotal. |
-| **Compra** | Operación del cliente. Registra los intentos de pago, crea las entradas cuando se confirma, genera el comprobante y se puede cancelar. |
+| **Compra** | Operación del cliente. Registra los intentos de pago, crea las entradas cuando se confirma, genera el comprobante y se puede cancelar. `generarComprobante()` crea el comprobante la primera vez y las siguientes devuelve el mismo (así sirve también para "Ver comprobante" desde el historial). |
 | **Entrada** | Derecho de acceso a un evento. Tiene un código único (número de compra + número de entrada, por ejemplo `15-3`) y se puede anular. |
 | **Comprobante** | Constancia de una compra pagada. Su número sale del número de compra (por ejemplo `C-15`), así es único sin otro contador. Arma el texto que se muestra al cliente. |
 | **Enums de estado** | `EstadoEvento`, `EstadoCompra` y `EstadoEntrada` (y `EstadoPago`, en la parte 2). Se usan enums y no `String` para que sea imposible poner un estado inválido. |
@@ -212,6 +223,7 @@ classDiagram
 | No puede haber dos usuarios con el mismo email | `DatosSistema.registrarUsuario` | `UsuarioException` |
 | Email y contraseña tienen que coincidir | `DatosSistema.autenticar` | `UsuarioException` |
 | Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
+| Un evento se crea con al menos un artista (D-002) | constructor de `Evento` | `DatosInvalidosException` |
 | No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
 | Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
 | No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
@@ -221,7 +233,7 @@ classDiagram
 | No se confirma un carrito vacío | `Carrito.verificarDisponibilidad` | `CompraException` |
 | La compra se confirma solo con un pago aprobado | `Compra.confirmar` | `CompraException` |
 | El comprobante se genera solo si hay pago aprobado | `Compra.generarComprobante` | `CompraException` |
-| No se cancela una compra ya cancelada o de un evento que ya pasó | `Compra.cancelar` | `CompraException` |
+| No se cancela una compra ya cancelada, ni si alguno de sus eventos es hoy o ya pasó (RF15: "antes de la fecha del evento") | `Compra.verificarCancelable` (la llama también `Compra.cancelar`) | `CompraException` |
 
 ### Cómo funciona una compra, paso a paso
 
@@ -229,7 +241,7 @@ classDiagram
 2. Al confirmar (CU10), el carrito vuelve a verificar la disponibilidad de **todos** sus ítems, porque algo pudo cambiar desde que se agregaron (por ejemplo, el organizador canceló el evento).
 3. Se crea una `Compra` en estado `PENDIENTE` con el total del carrito.
 4. `Compra.registrarPago(medio)` guarda el intento y lo procesa (CU11). Si se rechaza, el intento queda registrado y el cliente puede reintentar con otro medio.
-5. Con el pago aprobado, `Compra.confirmar(carrito)` ocupa los lugares en cada evento, crea una `Entrada` por unidad y pasa la compra a `CONFIRMADA`.
+5. Con el pago aprobado, `Compra.confirmar(carrito)` ocupa los lugares en cada evento, crea una `Entrada` por unidad y pasa la compra a `CONFIRMADA`. Recién ahí el controlador la agrega al cliente con `Cliente.agregarCompra`.
 6. `Compra.generarComprobante()` crea el `Comprobante` (CU12). Después el carrito se vacía.
 7. Si el cliente cancela el pago, la compra `PENDIENTE` se descarta: nunca se agregó a la lista del cliente, así que no queda guardada.
 
@@ -417,9 +429,17 @@ classDiagram
 
 ## Diferencias con el p5 y por qué
 
-El p6 sigue al p5. Las diferencias son de detalle y se van a reflejar en el p5 en la revisión de consistencia de la etapa E3:
+El p6 sigue al p5. Las diferencias son de detalle y se reflejaron en el p5 en la revisión de consistencia de la etapa E3 (19/10):
 
-- **`Compra` – `Entrada` y `Compra` – `MedioDePago` son `0..*`** (en el p5 son `1..*`): mientras la compra está `PENDIENTE` todavía no tiene entradas ni pagos. Una compra `CONFIRMADA` siempre tiene al menos una entrada y un pago aprobado.
-- **`Organizador` – `Artista` (registra) no se navega en el código:** los artistas son un catálogo compartido entre organizadores y ningún caso de uso necesita saber quién cargó cada artista.
+- **`Compra` – `Entrada` y `Compra` – `MedioDePago` son `0..*`** (en el p5 eran `1..*`; se corrigió el 19/10): mientras la compra está `PENDIENTE` todavía no tiene entradas ni pagos. Una compra `CONFIRMADA` siempre tiene al menos una entrada y un pago aprobado.
+- **`Organizador` – `Artista` (registra) no se navega en el código:** los artistas son un catálogo compartido entre organizadores y ningún caso de uso necesita saber quién cargó cada artista. En el p5 se deja, porque como concepto es cierto que el organizador los registra.
 - **`Organizador` – `Evento`:** la flecha va de `Evento` a `Organizador` (cada evento sabe quién lo organiza). Para listar los eventos de un organizador se usa `DatosSistema.getEventosDe`.
 - **`Evento` – `Artista` es `1..*`, igual que en el p5:** un evento se crea con al menos un artista (D-002, aprobado el 17/10: CU03 pide elegir los artistas al crear el evento).
+
+## Cambios hechos al dibujar los diagramas de secuencia (19/10)
+
+Al dibujar el [p8](p8-diagramas-de-secuencia.md) aparecieron métodos que el p6 no mostraba. Se agregaron para que todo sea consistente:
+
+- **`Compra.verificarCancelable(hoy)`:** CU14 pide verificar si se puede cancelar **antes** de pedir confirmación al cliente.
+- **Getters de `Evento`** (`getNombre`, `getFecha`, `getLugar`, `getPrecioEntrada`, `getEstado`, `getArtistas`) y de **`Compra`** (`getNumero`, `getFechaHora`, `getCliente`): los usan las pantallas para armar las tablas, el comprobante y los códigos de las entradas.
+- **`Carrito.buscarItem(evento)`** (privado): evita repetir la búsqueda en `agregarItem`, `cambiarCantidad` y `quitarItem`.

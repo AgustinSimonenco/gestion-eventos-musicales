@@ -108,6 +108,7 @@ stateDiagram-v2
 - **Confirmar compra (CU10):** `ControladorCompras.iniciarCompra` primero verifica el carrito. Si un evento fue cancelado o ya no tiene lugar, muestra el error y se queda en el carrito sin cobrar (4a). Si está todo bien, muestra el resumen con `confirmar(...)`; si el cliente acepta, se crea la compra `PENDIENTE` y se pasa a `PantallaPago`.
 - **Pago rechazado (CU11, 5a):** se muestra el motivo y se queda en `PantallaPago`, con la misma compra en curso. El cliente puede reintentar con otro medio o tocar *Cancelar pago*.
 - **Pago aprobado:** se confirma la compra, se genera el comprobante, se vacía el carrito y se muestra el comprobante en un diálogo. Al aceptar, el cliente vuelve al inicio.
+- **Cancelar compra (CU14):** antes de mostrar el diálogo de confirmación, el controlador verifica que se pueda cancelar. Si la compra ya estaba cancelada o el evento es hoy o ya pasó, se muestra el error y se queda en `PantallaHistorial`, sin preguntar nada (ver [secuencia de CU14](secuencias/CU14-cancelar-compra.md)).
 - **El comprobante aparece dos veces en el diagrama** solo porque se llega desde dos lugares (después de pagar y desde el historial). Es el mismo diálogo: `VentanaPrincipal.mostrarTexto`.
 
 ## Resumen de pantallas
