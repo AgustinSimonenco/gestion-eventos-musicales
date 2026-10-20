@@ -1,17 +1,6 @@
 # p6. Diagrama de clases del modelo
 
-Este diagrama muestra las clases del **modelo**: las que tienen las reglas del negocio. No incluye pantallas ni controladores, que van en el p7.
-
-Es consistente con el [diagrama conceptual (p5)](p5-diagrama-conceptual.md): cada concepto del p5 tiene su clase acá. Lo que se agrega son los detalles de diseño: atributos con tipo, métodos, la interfaz `MedioDePago`, la persistencia y las excepciones.
-
-Para que se pueda leer, el modelo se divide en cuatro partes:
-
-1. [Usuarios, eventos y compras](#1-usuarios-eventos-y-compras)
-2. [Pagos](#2-pagos)
-3. [Persistencia](#3-persistencia)
-4. [Jerarquía de excepciones](#4-jerarquía-de-excepciones)
-
-Paquetes de Java: `modelo` (partes 1 y 2), `persistencia` (parte 3, salvo `DatosSistema`, que va en `modelo`) y `excepciones` (parte 4).
+Se agregan los detalles de diseño: atributos con tipo, métodos.
 
 ## 1. Usuarios, eventos y compras
 
