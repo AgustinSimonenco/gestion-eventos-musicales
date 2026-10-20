@@ -178,22 +178,6 @@ classDiagram
     Entrada --> EstadoEntrada
 ```
 
-### Descripción de las clases
-
-| Clase | Responsabilidad |
-|---|---|
-| **Usuario** | Clase abstracta con lo común a todo usuario: nombre, email, contraseña y la validación de la contraseña. `getTipo()` es abstracto: cada subclase dice qué tipo de usuario es, y con eso el controlador decide qué menú mostrar. |
-| **Cliente** | Usuario que compra. Tiene **un** carrito y la lista de sus compras (su historial). |
-| **Organizador** | Usuario que crea eventos y gestiona artistas. No tiene atributos propios: cada evento guarda quién lo organiza. |
-| **Evento** | Recital. Sabe cuántas entradas le quedan, controla que no se venda más que la capacidad, y maneja sus artistas y su estado. |
-| **Artista** | Músico o banda. Catálogo compartido por todos los organizadores. |
-| **Carrito** | Selección provisoria del cliente. Calcula el total y verifica la disponibilidad de todos sus ítems. Si se agrega un evento que ya está en el carrito, se suma la cantidad en el mismo ítem. |
-| **ItemCarrito** | Una línea del carrito: un evento y una cantidad. Calcula su subtotal. |
-| **Compra** | Operación del cliente. Registra los intentos de pago, crea las entradas cuando se confirma, genera el comprobante y se puede cancelar. |
-| **Entrada** | Derecho de acceso a un evento. Tiene un código único (número de compra + número de entrada, por ejemplo `15-3`) y se puede anular. |
-| **Comprobante** | Constancia de una compra pagada. Su número sale del número de compra (por ejemplo `C-15`), así es único sin otro contador. Arma el texto que se muestra al cliente. |
-| **Enums de estado** | `EstadoEvento`, `EstadoCompra` y `EstadoEntrada` (y `EstadoPago`, en la parte 2). Se usan enums y no `String` para que sea imposible poner un estado inválido. |
-
 ### Reglas importantes y dónde están
 
 | Regla | Clase y método | Excepción |
