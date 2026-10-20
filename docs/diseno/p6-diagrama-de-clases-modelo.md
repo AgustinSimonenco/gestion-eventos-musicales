@@ -29,6 +29,7 @@ classDiagram
         +getTipo()* String
         +getNombre() String
         +getEmail() String
+        -estaVacio(String texto) boolean
     }
 
     class Cliente {
@@ -68,12 +69,19 @@ classDiagram
         +tieneArtista(Artista artista) boolean
         +estaActivo() boolean
         +actualizarEstado(LocalDate hoy) void
+        +getId() int
         +getNombre() String
         +getFecha() LocalDate
         +getLugar() String
+        +getCapacidad() int
         +getPrecioEntrada() double
         +getEstado() EstadoEvento
+        +getOrganizador() Organizador
         +getArtistas() List~Artista~
+        -validarDatos(nombre, fecha, lugar, capacidad, precioEntrada) void
+        -guardarDatos(nombre, fecha, lugar, capacidad, precioEntrada) void
+        -verificarVigente(String accion) void
+        -actualizarCupo() void
     }
 
     class EstadoEvento {
@@ -90,8 +98,11 @@ classDiagram
         -String generoMusical
         +Artista(id, nombre, generoMusical)
         +modificar(nombre, generoMusical) void
+        +getId() int
         +getNombre() String
         +getGeneroMusical() String
+        +toString() String
+        -validar(nombre, generoMusical) void
     }
 
     class Carrito {
@@ -100,6 +111,8 @@ classDiagram
         +cambiarCantidad(Evento evento, int cantidad) void
         +quitarItem(Evento evento) void
         -buscarItem(Evento evento) ItemCarrito
+        -buscarItemExistente(Evento evento) ItemCarrito
+        -validarCantidad(int cantidad) void
         +verificarDisponibilidad() void
         +getTotal() double
         +getItems() List~ItemCarrito~
@@ -140,6 +153,7 @@ classDiagram
         +getEntradas() List~Entrada~
         +getTotal() double
         +getEstado() EstadoCompra
+        -crearEntradas(ItemCarrito item) void
     }
 
     class EstadoCompra {
@@ -159,6 +173,7 @@ classDiagram
         +estaValida() boolean
         +getEvento() Evento
         +getCodigo() String
+        +getPrecio() double
     }
 
     class EstadoEntrada {
@@ -225,6 +240,7 @@ classDiagram
 | Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
 | Un evento se crea con al menos un artista (D-002) | constructor de `Evento` | `DatosInvalidosException` |
 | No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
+| Un evento cancelado o finalizado no se modifica ni se vuelve a cancelar | `Evento.verificarVigente` (privado, lo llaman `modificar` y `cancelar`) | `EventoException` |
 | Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
 | No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
 | Un artista no se asigna dos veces; un evento conserva al menos un artista | `Evento.asignarArtista` / `Evento.quitarArtista` | `ArtistaException` |
@@ -270,6 +286,8 @@ classDiagram
         +getDescripcion()* String
         +getMonto() double
         +getEstado() EstadoPago
+        +getFechaHora() LocalDateTime
+        #tieneDigitos(String texto, int cantidad)$ boolean
     }
 
     class PagoTarjeta {
@@ -279,6 +297,8 @@ classDiagram
         +PagoTarjeta(monto, numero, titular, mesVencimiento, anioVencimiento, codigoSeguridad, cuotas)
         #autorizar() boolean
         +getDescripcion() String
+        +getTitular() String
+        -validarVencimiento(int mes, int anio) void
     }
 
     class PagoTransferencia {
@@ -345,6 +365,7 @@ classDiagram
         +agregarArtista(Artista artista) void
         +eliminarArtista(Artista artista) void
         +getArtistas() List~Artista~
+        -buscarUsuario(String email) Usuario
     }
 
     Persistencia <|.. PersistenciaArchivo
@@ -372,6 +393,7 @@ classDiagram
     class Exception
     class SistemaException {
         +SistemaException(String mensaje)
+        +SistemaException(String mensaje, Throwable causa)
     }
     class DatosInvalidosException
     class UsuarioException
@@ -384,7 +406,9 @@ classDiagram
     class ArtistaException
     class CompraException
     class PagoException
-    class PersistenciaException
+    class PersistenciaException {
+        +PersistenciaException(String mensaje, Throwable causa)
+    }
 
     Exception <|-- SistemaException
     SistemaException <|-- DatosInvalidosException
@@ -443,3 +467,14 @@ Al dibujar el [p8](p8-diagramas-de-secuencia.md) aparecieron métodos que el p6 
 - **`Compra.verificarCancelable(hoy)`:** CU14 pide verificar si se puede cancelar **antes** de pedir confirmación al cliente.
 - **Getters de `Evento`** (`getNombre`, `getFecha`, `getLugar`, `getPrecioEntrada`, `getEstado`, `getArtistas`) y de **`Compra`** (`getNumero`, `getFechaHora`, `getCliente`): los usan las pantallas para armar las tablas, el comprobante y los códigos de las entradas.
 - **`Carrito.buscarItem(evento)`** (privado): evita repetir la búsqueda en `agregarItem`, `cambiarCantidad` y `quitarItem`.
+
+## Cambios hechos al programar el esqueleto (20/10)
+
+Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que el código necesitó, para que p6 y código coincidan:
+
+- **Getters nuevos:** `Evento.getId`, `getCapacidad` (para llenar el formulario de CU04) y `getOrganizador` (lo usa `DatosSistema.getEventosDe`); `Artista.getId`; `Entrada.getPrecio` y `Pago.getFechaHora` (para el comprobante); `PagoTarjeta.getTitular`.
+- **`Artista.toString()`** devuelve el nombre: es lo que muestra una `JList<Artista>` en las pantallas.
+- **`Pago.tieneDigitos(texto, cantidad)`** (protegido y estático): lo usan `PagoTarjeta` y `PagoTransferencia` para validar el número de tarjeta, el código y el CBU sin repetir el mismo `for`.
+- **Métodos privados** para no repetir código: `Evento.validarDatos`, `guardarDatos`, `verificarVigente` y `actualizarCupo`; `Carrito.buscarItemExistente` y `validarCantidad`; `Compra.crearEntradas`; `DatosSistema.buscarUsuario`; `Usuario.estaVacio`; `Artista.validar`; `PagoTarjeta.validarVencimiento`.
+- **`SistemaException` y `PersistenciaException`** tienen un constructor con la excepción original (`causa`), para que `PersistenciaArchivo` envuelva la `IOException` sin perderla.
+- **El monto de un pago puede ser 0** (un evento puede ser gratis, porque el precio puede ser 0). Lo que no puede ser es negativo.

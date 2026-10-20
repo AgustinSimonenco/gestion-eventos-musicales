@@ -33,7 +33,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
 
 ### Implementación
 
-- [ ] **E4 · 20/10 — Esqueleto del proyecto**
+- [x] **E4 · 20/10 — Esqueleto del proyecto**
   - Estructura `src/`, `test/`, `lib/` y `.vscode/settings.json`.
   - Scripts para compilar y ejecutar.
   - `Main`.
