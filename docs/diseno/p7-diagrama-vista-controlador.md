@@ -1,16 +1,5 @@
 # p7. Diagrama de clases de la vista y el controlador
 
-Este diagrama muestra las clases de la **vista** (pantallas Swing) y del **controlador**, y cómo se relacionan con el [modelo (p6)](p6-diagrama-de-clases-modelo.md). La navegación entre pantallas está en el [p9](p9-diagrama-de-navegacion.md).
-
-Se divide en cuatro partes:
-
-1. [Visión general (MVC)](#1-visión-general-mvc)
-2. [Vista](#2-vista)
-3. [Controladores](#3-controladores)
-4. [Trazabilidad: caso de uso → pantalla → controlador → modelo](#4-trazabilidad-caso-de-uso--pantalla--controlador--modelo)
-
-Paquetes de Java: `vista` (parte 2) y `controlador` (parte 3). La clase `Main` va en el paquete raíz: solo arma los objetos y abre la ventana.
-
 ## 1. Visión general (MVC)
 
 ```mermaid
