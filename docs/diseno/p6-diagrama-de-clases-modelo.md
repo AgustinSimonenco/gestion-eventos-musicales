@@ -364,11 +364,3 @@ classDiagram
 | **GRASP Bajo acoplamiento** | `Compra` depende de `MedioDePago`, no de las subclases | Agregar un medio no obliga a cambiar `Compra`. |
 | **Jerarquía de excepciones propia** | `SistemaException` y subclases | Errores de negocio clasificados (RNF07). |
 
-## Diferencias con el p5 y por qué
-
-El p6 sigue al p5. Las diferencias son de detalle y se van a reflejar en el p5 en la revisión de consistencia de la etapa E3:
-
-- **`Compra` – `Entrada` y `Compra` – `MedioDePago` son `0..*`** (en el p5 son `1..*`): mientras la compra está `PENDIENTE` todavía no tiene entradas ni pagos. Una compra `CONFIRMADA` siempre tiene al menos una entrada y un pago aprobado.
-- **`Organizador` – `Artista` (registra) no se navega en el código:** los artistas son un catálogo compartido entre organizadores y ningún caso de uso necesita saber quién cargó cada artista.
-- **`Organizador` – `Evento`:** la flecha va de `Evento` a `Organizador` (cada evento sabe quién lo organiza). Para listar los eventos de un organizador se usa `DatosSistema.getEventosDe`.
-- **`Evento` – `Artista` es `1..*`, igual que en el p5:** un evento se crea con al menos un artista (D-002, aprobado el 17/10: CU03 pide elegir los artistas al crear el evento).
