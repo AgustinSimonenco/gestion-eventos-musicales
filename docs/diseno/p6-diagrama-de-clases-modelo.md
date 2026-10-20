@@ -196,15 +196,15 @@ classDiagram
 | El comprobante se genera solo si hay pago aprobado | `Compra.generarComprobante` | `CompraException` |
 | No se cancela una compra ya cancelada o de un evento que ya pasó | `Compra.cancelar` | `CompraException` |
 
-### Cómo funciona una compra, paso a paso
+### Flujo esperado: 
 
-1. El cliente agrega ítems al `Carrito`. Cada vez se llama a `Evento.verificarDisponibilidad` (CU09 incluye CU08).
-2. Al confirmar (CU10), el carrito vuelve a verificar la disponibilidad de **todos** sus ítems, porque algo pudo cambiar desde que se agregaron (por ejemplo, el organizador canceló el evento).
-3. Se crea una `Compra` en estado `PENDIENTE` con el total del carrito.
-4. `Compra.registrarPago(medio)` guarda el intento y lo procesa (CU11). Si se rechaza, el intento queda registrado y el cliente puede reintentar con otro medio.
-5. Con el pago aprobado, `Compra.confirmar(carrito)` ocupa los lugares en cada evento, crea una `Entrada` por unidad y pasa la compra a `CONFIRMADA`.
-6. `Compra.generarComprobante()` crea el `Comprobante` (CU12). Después el carrito se vacía.
-7. Si el cliente cancela el pago, la compra `PENDIENTE` se descarta: nunca se agregó a la lista del cliente, así que no queda guardada.
+1. El cliente agrega ítems al Carrito. 
+2. Al confirmar (CU10), el carrito vuelve a verificar la disponibilidad de todos sus ítems.
+3. Se crea una compra en estado pendiente con el total del carrito.
+4. registrarPago guarda el intento y lo procesa (CU11). Si se rechaza, el intento queda registrado y el cliente puede reintentar con otro medio.
+5. Con el pago aprobado, confirmarCarrito ocupa los lugares en cada evento, crea una Entrada y pasa compra a CONFIRMADA.
+6. generarComprobante crea el comprobante (CU12). Después el carrito se vacía.
+7. Si el cliente cancela el pago, la compra pendiente se descarta.
 
 ## 2. Pagos
 
