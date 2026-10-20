@@ -4,7 +4,7 @@ Trabajo Práctico Integrador — **Algoritmos I** (2026, 2.º cuatrimestre)
 
 Aplicación de escritorio para administrar recitales: gestión de eventos, asignación de artistas, venta de entradas y registro de pagos. Centraliza la administración de eventos y la interacción con los usuarios.
 
-> 🚧 Etapa actual: documentación de análisis y diseño.
+> 🚧 Etapa actual: documentación de diseño terminada (E1 a E3). Desde el 20/10 empieza la implementación.
 
 ## Actores
 
@@ -29,11 +29,11 @@ Aplicación de escritorio para administrar recitales: gestión de eventos, asign
 
 | Punto | Documento |
 |---|---|
-| p5 | [Diagrama conceptual](docs/diseno/p5-diagrama-conceptual.md) |
-| p6 | [Diagrama de clases del modelo](docs/diseno/p6-diagrama-de-clases-modelo.md) *(aprobado el 17/10)* |
-| p7 | [Diagrama de vista y controlador](docs/diseno/p7-diagrama-vista-controlador.md) *(versión E2, pendiente de aprobación)* |
-| p8 | Diagramas de secuencia de 5 casos de uso *(pendiente)* |
-| p9 | [Diagrama de navegación de la GUI](docs/diseno/p9-diagrama-de-navegacion.md) *(versión E2, pendiente de aprobación)* |
+| p5 | [Diagrama conceptual](docs/diseno/p5-diagrama-conceptual.md) *(multiplicidades de Compra corregidas el 19/10)* |
+| p6 | [Diagrama de clases del modelo](docs/diseno/p6-diagrama-de-clases-modelo.md) *(aprobado el 17/10, ajustado el 19/10)* |
+| p7 | [Diagrama de vista y controlador](docs/diseno/p7-diagrama-vista-controlador.md) *(aprobado el 18/10, ajustado el 19/10)* |
+| p8 | [Diagramas de secuencia de 5 casos de uso](docs/diseno/p8-diagramas-de-secuencia.md) *(versión E3, pendiente de aprobación)* |
+| p9 | [Diagrama de navegación de la GUI](docs/diseno/p9-diagrama-de-navegacion.md) *(aprobado el 18/10)* |
 
 ## Tecnologías
 
