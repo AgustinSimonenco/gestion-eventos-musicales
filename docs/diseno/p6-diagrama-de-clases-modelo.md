@@ -177,25 +177,6 @@ classDiagram
     Compra --> EstadoCompra
     Entrada --> EstadoEntrada
 ```
-
-### Reglas importantes y dónde están
-
-| Regla | Clase y método | Excepción |
-|---|---|---|
-| No puede haber dos usuarios con el mismo email | `DatosSistema.registrarUsuario` | `UsuarioException` |
-| Email y contraseña tienen que coincidir | `DatosSistema.autenticar` | `UsuarioException` |
-| Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
-| No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
-| Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
-| No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
-| Un artista no se asigna dos veces; un evento conserva al menos un artista | `Evento.asignarArtista` / `Evento.quitarArtista` | `ArtistaException` |
-| No se da de baja un artista asignado a un evento activo | `DatosSistema.eliminarArtista` | `ArtistaException` |
-| La cantidad pedida tiene que ser mayor a 0 | `Carrito.agregarItem` / `Carrito.cambiarCantidad` | `DatosInvalidosException` |
-| No se confirma un carrito vacío | `Carrito.verificarDisponibilidad` | `CompraException` |
-| La compra se confirma solo con un pago aprobado | `Compra.confirmar` | `CompraException` |
-| El comprobante se genera solo si hay pago aprobado | `Compra.generarComprobante` | `CompraException` |
-| No se cancela una compra ya cancelada o de un evento que ya pasó | `Compra.cancelar` | `CompraException` |
-
 ### Flujo esperado: 
 
 1. El cliente agrega ítems al Carrito. 
@@ -263,15 +244,11 @@ classDiagram
     Pago --> EstadoPago
 ```
 
-### Descripción
+### Descripción y decisiones
 
-- **`MedioDePago`** es la interfaz que usa el resto del sistema. `Compra` guarda una lista de `MedioDePago` y nunca pregunta si es tarjeta o transferencia: solo llama a `procesar()`.
-- **`Pago`** es la clase abstracta que implementa la interfaz y tiene lo común (monto, fecha y estado). Su método `procesar()` es el **método plantilla**: siempre hace los mismos pasos (llama a `autorizar()`, pone el estado en `APROBADO` o `RECHAZADO` y, si se rechazó, lanza `PagoException`). Lo único que cambia entre medios es `autorizar()`, que cada subclase implementa.
-- **`PagoTarjeta`** valida los datos en el constructor (16 dígitos, vencimiento no pasado, código de 3 dígitos, cuotas 1, 3, 6 o 12) y **solo guarda los últimos 4 dígitos**. El número completo y el código de seguridad no se guardan nunca.
-- **`PagoTransferencia`** valida que el CBU tenga 22 dígitos y que el número de operación no esté vacío.
-- **El pago es simulado** (ver p1). Para poder mostrar el caso de rechazo en la demo, `autorizar()` rechaza las tarjetas terminadas en `0000` y las transferencias cuyo número de operación termina en `000`.
-
-**¿Para qué sirve la interfaz si ya está la clase abstracta?** Para la extensibilidad. Si mañana se agrega MercadoPago, se puede escribir una clase que implemente `MedioDePago` directamente, aunque no se parezca a `Pago`. `Compra` y los controladores no cambian, porque dependen de la interfaz.
+- **MediodePaho** es la interfaz que usa el resto del sistema. Compra guarda una lista de MedioDePago y nunca pregunta si es tarjeta o transferencia: solo llama a procesar().
+- **Pago** es la clase abstracta que implementa la interfaz y tiene lo común (monto, fecha y estado). Su método procesar() es el **método base**: siempre hace los mismos pasos (llama a autorizar(), pone el estado y, si se rechazó, lanza excepción). Lo único que cambia entre medios es autorizar(), que cada subclase implementa.
+- Se usa una interfaz para hacer el programa extensible. Ejemplo: Si mañana se agrega MercadoPago, se puede escribir una clase que implemente MedioDePago directamente, aunque no se parezca a Pago. Compra y los controladores no cambian, porque dependen de la interfaz.
 
 ## 3. Persistencia
 
@@ -317,12 +294,11 @@ classDiagram
 
 ### Descripción
 
-- **`DatosSistema`** (paquete `modelo`) agrupa todo lo que se guarda: usuarios, eventos y artistas. Las compras no van en una lista aparte, porque cada `Cliente` ya tiene las suyas. También genera los números de id (un solo contador para todo, así nunca se repiten).
-  - **No es una God class:** solo guarda las listas y hace las búsquedas que necesitan recorrerlas todas (por ejemplo, ver si un email ya existe). Las reglas de cada objeto están en su propia clase (`Evento`, `Carrito`, `Compra`).
-- **`Persistencia`** es la interfaz que usan los controladores para cargar y guardar. No saben si los datos van a un archivo, a una base de datos o a otro lado.
-- **`PersistenciaArchivo`** es la implementación que guarda todo en **un archivo** usando solo la biblioteca estándar. Si el archivo no existe (primera ejecución), `cargar()` devuelve un `DatosSistema` vacío.
-  - **Formato (D-001, aprobado el 17/10): serialización de Java.** `guardar()` escribe el `DatosSistema` entero con `ObjectOutputStream` y `cargar()` lo lee con `ObjectInputStream`. Por eso todas las clases del modelo que se guardan implementan `java.io.Serializable` (se omite en los diagramas para no llenarlos de flechas). La ventaja es que las referencias entre objetos se conservan solas: una `Entrada` sigue apuntando al mismo `Evento` después de cargar.
-- **Cuándo se guarda:** el controlador llama a `guardar` después de cada operación que cambia datos (registrar, crear evento, comprar, cancelar…). Así, si se cierra la aplicación, no se pierde nada.
+- **DatosSistema** agrupa todo lo que se guarda: usuarios, eventos y artistas. Las compras no van en una lista aparte, porque cada Cliente ya tiene las suyas. 
+solo guarda las listas y hace las búsquedas que necesitan recorrerlas todas (por ejemplo, ver si un email ya existe). 
+- **Persistencia** es la interfaz que usan los controladores para cargar y guardar. No saben lo interno.
+- **PersistenciaArchivo** es la implementación que guarda todo en **un archivo** usando solo la biblioteca estándar. Si el archivo no existe (primera ejecución), cargar() devuelve un DatosSistema vacío.
+- **Cuándo se guarda:** el controlador llama a guardar después de cada operación que cambia datos (registrar, crear evento, comprar, cancelar…). Así, si se cierra la aplicación, no se pierde nada.
 
 ## 4. Jerarquía de excepciones
 
