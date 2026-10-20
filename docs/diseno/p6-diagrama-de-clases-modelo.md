@@ -1,6 +1,17 @@
 # p6. Diagrama de clases del modelo
 
-Se agregan los detalles de diseño: atributos con tipo, métodos.
+Este diagrama muestra las clases del **modelo**: las que tienen las reglas del negocio. No incluye pantallas ni controladores, que van en el p7.
+
+Es consistente con el [diagrama conceptual (p5)](p5-diagrama-conceptual.md): cada concepto del p5 tiene su clase acá. Lo que se agrega son los detalles de diseño: atributos con tipo, métodos, la interfaz `MedioDePago`, la persistencia y las excepciones.
+
+Para que se pueda leer, el modelo se divide en cuatro partes:
+
+1. [Usuarios, eventos y compras](#1-usuarios-eventos-y-compras)
+2. [Pagos](#2-pagos)
+3. [Persistencia](#3-persistencia)
+4. [Jerarquía de excepciones](#4-jerarquía-de-excepciones)
+
+Paquetes de Java: `modelo` (partes 1 y 2), `persistencia` (parte 3, salvo `DatosSistema`, que va en `modelo`) y `excepciones` (parte 4).
 
 ## 1. Usuarios, eventos y compras
 
@@ -177,15 +188,50 @@ classDiagram
     Compra --> EstadoCompra
     Entrada --> EstadoEntrada
 ```
-### Flujo esperado: 
 
-1. El cliente agrega ítems al Carrito. 
-2. Al confirmar (CU10), el carrito vuelve a verificar la disponibilidad de todos sus ítems.
-3. Se crea una compra en estado pendiente con el total del carrito.
-4. registrarPago guarda el intento y lo procesa (CU11). Si se rechaza, el intento queda registrado y el cliente puede reintentar con otro medio.
-5. Con el pago aprobado, confirmarCarrito ocupa los lugares en cada evento, crea una Entrada y pasa compra a CONFIRMADA.
-6. generarComprobante crea el comprobante (CU12). Después el carrito se vacía.
-7. Si el cliente cancela el pago, la compra pendiente se descarta.
+### Descripción de las clases
+
+| Clase | Responsabilidad |
+|---|---|
+| **Usuario** | Clase abstracta con lo común a todo usuario: nombre, email, contraseña y la validación de la contraseña. `getTipo()` es abstracto: cada subclase dice qué tipo de usuario es, y con eso el controlador decide qué menú mostrar. |
+| **Cliente** | Usuario que compra. Tiene **un** carrito y la lista de sus compras (su historial). |
+| **Organizador** | Usuario que crea eventos y gestiona artistas. No tiene atributos propios: cada evento guarda quién lo organiza. |
+| **Evento** | Recital. Sabe cuántas entradas le quedan, controla que no se venda más que la capacidad, y maneja sus artistas y su estado. |
+| **Artista** | Músico o banda. Catálogo compartido por todos los organizadores. |
+| **Carrito** | Selección provisoria del cliente. Calcula el total y verifica la disponibilidad de todos sus ítems. Si se agrega un evento que ya está en el carrito, se suma la cantidad en el mismo ítem. |
+| **ItemCarrito** | Una línea del carrito: un evento y una cantidad. Calcula su subtotal. |
+| **Compra** | Operación del cliente. Registra los intentos de pago, crea las entradas cuando se confirma, genera el comprobante y se puede cancelar. |
+| **Entrada** | Derecho de acceso a un evento. Tiene un código único (número de compra + número de entrada, por ejemplo `15-3`) y se puede anular. |
+| **Comprobante** | Constancia de una compra pagada. Su número sale del número de compra (por ejemplo `C-15`), así es único sin otro contador. Arma el texto que se muestra al cliente. |
+| **Enums de estado** | `EstadoEvento`, `EstadoCompra` y `EstadoEntrada` (y `EstadoPago`, en la parte 2). Se usan enums y no `String` para que sea imposible poner un estado inválido. |
+
+### Reglas importantes y dónde están
+
+| Regla | Clase y método | Excepción |
+|---|---|---|
+| No puede haber dos usuarios con el mismo email | `DatosSistema.registrarUsuario` | `UsuarioException` |
+| Email y contraseña tienen que coincidir | `DatosSistema.autenticar` | `UsuarioException` |
+| Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
+| No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
+| Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
+| No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
+| Un artista no se asigna dos veces; un evento conserva al menos un artista | `Evento.asignarArtista` / `Evento.quitarArtista` | `ArtistaException` |
+| No se da de baja un artista asignado a un evento activo | `DatosSistema.eliminarArtista` | `ArtistaException` |
+| La cantidad pedida tiene que ser mayor a 0 | `Carrito.agregarItem` / `Carrito.cambiarCantidad` | `DatosInvalidosException` |
+| No se confirma un carrito vacío | `Carrito.verificarDisponibilidad` | `CompraException` |
+| La compra se confirma solo con un pago aprobado | `Compra.confirmar` | `CompraException` |
+| El comprobante se genera solo si hay pago aprobado | `Compra.generarComprobante` | `CompraException` |
+| No se cancela una compra ya cancelada o de un evento que ya pasó | `Compra.cancelar` | `CompraException` |
+
+### Cómo funciona una compra, paso a paso
+
+1. El cliente agrega ítems al `Carrito`. Cada vez se llama a `Evento.verificarDisponibilidad` (CU09 incluye CU08).
+2. Al confirmar (CU10), el carrito vuelve a verificar la disponibilidad de **todos** sus ítems, porque algo pudo cambiar desde que se agregaron (por ejemplo, el organizador canceló el evento).
+3. Se crea una `Compra` en estado `PENDIENTE` con el total del carrito.
+4. `Compra.registrarPago(medio)` guarda el intento y lo procesa (CU11). Si se rechaza, el intento queda registrado y el cliente puede reintentar con otro medio.
+5. Con el pago aprobado, `Compra.confirmar(carrito)` ocupa los lugares en cada evento, crea una `Entrada` por unidad y pasa la compra a `CONFIRMADA`.
+6. `Compra.generarComprobante()` crea el `Comprobante` (CU12). Después el carrito se vacía.
+7. Si el cliente cancela el pago, la compra `PENDIENTE` se descarta: nunca se agregó a la lista del cliente, así que no queda guardada.
 
 ## 2. Pagos
 
@@ -244,11 +290,15 @@ classDiagram
     Pago --> EstadoPago
 ```
 
-### Descripción y decisiones
+### Descripción
 
-- **MediodePaho** es la interfaz que usa el resto del sistema. Compra guarda una lista de MedioDePago y nunca pregunta si es tarjeta o transferencia: solo llama a procesar().
-- **Pago** es la clase abstracta que implementa la interfaz y tiene lo común (monto, fecha y estado). Su método procesar() es el **método base**: siempre hace los mismos pasos (llama a autorizar(), pone el estado y, si se rechazó, lanza excepción). Lo único que cambia entre medios es autorizar(), que cada subclase implementa.
-- Se usa una interfaz para hacer el programa extensible. Ejemplo: Si mañana se agrega MercadoPago, se puede escribir una clase que implemente MedioDePago directamente, aunque no se parezca a Pago. Compra y los controladores no cambian, porque dependen de la interfaz.
+- **`MedioDePago`** es la interfaz que usa el resto del sistema. `Compra` guarda una lista de `MedioDePago` y nunca pregunta si es tarjeta o transferencia: solo llama a `procesar()`.
+- **`Pago`** es la clase abstracta que implementa la interfaz y tiene lo común (monto, fecha y estado). Su método `procesar()` es el **método plantilla**: siempre hace los mismos pasos (llama a `autorizar()`, pone el estado en `APROBADO` o `RECHAZADO` y, si se rechazó, lanza `PagoException`). Lo único que cambia entre medios es `autorizar()`, que cada subclase implementa.
+- **`PagoTarjeta`** valida los datos en el constructor (16 dígitos, vencimiento no pasado, código de 3 dígitos, cuotas 1, 3, 6 o 12) y **solo guarda los últimos 4 dígitos**. El número completo y el código de seguridad no se guardan nunca.
+- **`PagoTransferencia`** valida que el CBU tenga 22 dígitos y que el número de operación no esté vacío.
+- **El pago es simulado** (ver p1). Para poder mostrar el caso de rechazo en la demo, `autorizar()` rechaza las tarjetas terminadas en `0000` y las transferencias cuyo número de operación termina en `000`.
+
+**¿Para qué sirve la interfaz si ya está la clase abstracta?** Para la extensibilidad. Si mañana se agrega MercadoPago, se puede escribir una clase que implemente `MedioDePago` directamente, aunque no se parezca a `Pago`. `Compra` y los controladores no cambian, porque dependen de la interfaz.
 
 ## 3. Persistencia
 
@@ -294,11 +344,12 @@ classDiagram
 
 ### Descripción
 
-- **DatosSistema** agrupa todo lo que se guarda: usuarios, eventos y artistas. Las compras no van en una lista aparte, porque cada Cliente ya tiene las suyas. 
-solo guarda las listas y hace las búsquedas que necesitan recorrerlas todas (por ejemplo, ver si un email ya existe). 
-- **Persistencia** es la interfaz que usan los controladores para cargar y guardar. No saben lo interno.
-- **PersistenciaArchivo** es la implementación que guarda todo en **un archivo** usando solo la biblioteca estándar. Si el archivo no existe (primera ejecución), cargar() devuelve un DatosSistema vacío.
-- **Cuándo se guarda:** el controlador llama a guardar después de cada operación que cambia datos (registrar, crear evento, comprar, cancelar…). Así, si se cierra la aplicación, no se pierde nada.
+- **`DatosSistema`** (paquete `modelo`) agrupa todo lo que se guarda: usuarios, eventos y artistas. Las compras no van en una lista aparte, porque cada `Cliente` ya tiene las suyas. También genera los números de id (un solo contador para todo, así nunca se repiten).
+  - **No es una God class:** solo guarda las listas y hace las búsquedas que necesitan recorrerlas todas (por ejemplo, ver si un email ya existe). Las reglas de cada objeto están en su propia clase (`Evento`, `Carrito`, `Compra`).
+- **`Persistencia`** es la interfaz que usan los controladores para cargar y guardar. No saben si los datos van a un archivo, a una base de datos o a otro lado.
+- **`PersistenciaArchivo`** es la implementación que guarda todo en **un archivo** usando solo la biblioteca estándar. Si el archivo no existe (primera ejecución), `cargar()` devuelve un `DatosSistema` vacío.
+  - **Formato (D-001, aprobado el 17/10): serialización de Java.** `guardar()` escribe el `DatosSistema` entero con `ObjectOutputStream` y `cargar()` lo lee con `ObjectInputStream`. Por eso todas las clases del modelo que se guardan implementan `java.io.Serializable` (se omite en los diagramas para no llenarlos de flechas). La ventaja es que las referencias entre objetos se conservan solas: una `Entrada` sigue apuntando al mismo `Evento` después de cargar.
+- **Cuándo se guarda:** el controlador llama a `guardar` después de cada operación que cambia datos (registrar, crear evento, comprar, cancelar…). Así, si se cierra la aplicación, no se pierde nada.
 
 ## 4. Jerarquía de excepciones
 
@@ -364,3 +415,11 @@ classDiagram
 | **GRASP Bajo acoplamiento** | `Compra` depende de `MedioDePago`, no de las subclases | Agregar un medio no obliga a cambiar `Compra`. |
 | **Jerarquía de excepciones propia** | `SistemaException` y subclases | Errores de negocio clasificados (RNF07). |
 
+## Diferencias con el p5 y por qué
+
+El p6 sigue al p5. Las diferencias son de detalle y se van a reflejar en el p5 en la revisión de consistencia de la etapa E3:
+
+- **`Compra` – `Entrada` y `Compra` – `MedioDePago` son `0..*`** (en el p5 son `1..*`): mientras la compra está `PENDIENTE` todavía no tiene entradas ni pagos. Una compra `CONFIRMADA` siempre tiene al menos una entrada y un pago aprobado.
+- **`Organizador` – `Artista` (registra) no se navega en el código:** los artistas son un catálogo compartido entre organizadores y ningún caso de uso necesita saber quién cargó cada artista.
+- **`Organizador` – `Evento`:** la flecha va de `Evento` a `Organizador` (cada evento sabe quién lo organiza). Para listar los eventos de un organizador se usa `DatosSistema.getEventosDe`.
+- **`Evento` – `Artista` es `1..*`, igual que en el p5:** un evento se crea con al menos un artista (D-002, aprobado el 17/10: CU03 pide elegir los artistas al crear el evento).
