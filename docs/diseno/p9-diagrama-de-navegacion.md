@@ -28,6 +28,9 @@ stateDiagram-v2
 - **CU02 – menú según el rol:** `ControladorUsuarios.iniciarSesion` le pregunta al usuario `getTipo()`. Si es organizador, muestra `PantallaMisEventos`; si es cliente, `PantallaEventosDisponibles`. Un cliente **no tiene ningún botón** que lo lleve a una pantalla del organizador, y al revés. Por eso los *casts* de `Sesion.getCliente()` y `getOrganizador()` son seguros.
 - **Cerrar sesión** pone `usuarioActual` en `null` y vuelve al login.
 - Si el login o el registro fallan (email repetido, contraseña incorrecta), se muestra un diálogo de error y **se queda en la misma pantalla**.
+- **Registro exitoso:** se muestra el diálogo "Listo, *nombre*. Ya podés iniciar sesión." y se vuelve al login con los campos vacíos. No se entra directo: así la persona prueba su email y contraseña (CU01 → CU02).
+- *Registrarse* y *Volver* solo cambian de pantalla, por eso la pantalla llama directo a `ventana.mostrar(...)` sin pasar por el controlador (ver p7, parte 2).
+- En el login, apretar **Enter** en el campo de la contraseña es lo mismo que tocar *Ingresar*.
 
 ## 2. Organizador
 

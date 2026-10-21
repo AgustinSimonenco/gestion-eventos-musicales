@@ -41,7 +41,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
   - Clases base del modelo.
   - Interfaz de persistencia con su implementación en archivos.
   - Ventana principal vacía.
-- [ ] **E5 · 21/10 — Usuarios:** CU01 Registrarse, CU02 Iniciar sesión, menú según el rol.
+- [x] **E5 · 21/10 — Usuarios:** CU01 Registrarse, CU02 Iniciar sesión, menú según el rol.
 - [ ] **E6 · 22/10 — Artistas y eventos:** CU15 Gestionar artistas, CU03 Crear evento.
 - [ ] **E7 · 23/10 — Eventos (etapa liviana: es el día del parcial):** CU04 Modificar evento, CU05 Cancelar evento.
 - [ ] **E8 · 24/10 — Asignación y consulta:** CU06 Asignar artistas, CU07 Consultar eventos, CU08 Consultar disponibilidad.

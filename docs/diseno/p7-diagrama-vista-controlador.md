@@ -86,6 +86,8 @@ classDiagram
         #VentanaPrincipal ventana
         +Pantalla(VentanaPrincipal ventana)
         +actualizar()* void
+        #crearTitulo(String texto) JLabel
+        #agregarFila(JPanel formulario, String etiqueta, JComponent campo) void
     }
 
     class PantallaLogin {
@@ -101,10 +103,14 @@ classDiagram
         -JTextField campoEmail
         -JPasswordField campoContrasenia
         -JComboBox~String~ comboTipo
+        -JButton botonRegistrar
+        -JButton botonVolver
         +actualizar() void
         +actionPerformed(ActionEvent e) void
     }
     class PantallaMisEventos {
+        -JLabel etiquetaBienvenida
+        -JButton botonCerrarSesion
         -JTable tablaEventos
         -List~Evento~ eventosMostrados
         +actualizar() void
@@ -135,6 +141,8 @@ classDiagram
         +actionPerformed(ActionEvent e) void
     }
     class PantallaEventosDisponibles {
+        -JLabel etiquetaBienvenida
+        -JButton botonCerrarSesion
         -JTable tablaEventos
         -JTextField campoCantidad
         -List~Evento~ eventosMostrados
@@ -206,11 +214,11 @@ Para no llenar el diagrama de flechas, la relación pantalla → controlador va 
 |---|---|---|---|
 | **PantallaLogin** | Email y contraseña. Es la primera pantalla. | `ControladorUsuarios` | CU02 |
 | **PantallaRegistro** | Alta de usuario, eligiendo cliente u organizador. | `ControladorUsuarios` | CU01 |
-| **PantallaMisEventos** | Inicio del organizador: tabla con sus eventos y botones *Nuevo*, *Modificar*, *Cancelar evento*, *Artistas del evento*, *Gestionar artistas* y *Cerrar sesión*. | `ControladorEventos` | CU04 (elegir), CU05 |
+| **PantallaMisEventos** | Inicio del organizador: saludo, tabla con sus eventos y botones *Nuevo*, *Modificar*, *Cancelar evento*, *Artistas del evento*, *Gestionar artistas* y *Cerrar sesión*. | `ControladorEventos` y `ControladorUsuarios` (saludo y *Cerrar sesión*) | CU02 (menú), CU04 (elegir), CU05 |
 | **PantallaFormularioEvento** | Crear o modificar un evento. Al crear, se eligen los artistas (D-002); si falta uno, el botón *Nuevo artista* lleva a `PantallaArtistas`. | `ControladorEventos` | CU03, CU04 |
 | **PantallaAsignarArtistas** | Artistas asignados y registrados del evento elegido. | `ControladorEventos` | CU06 |
 | **PantallaArtistas** | Catálogo de artistas: alta, modificación y baja. | `ControladorArtistas` | CU15 |
-| **PantallaEventosDisponibles** | Inicio del cliente: eventos activos, *Ver disponibilidad*, cantidad y *Agregar al carrito*. Botones *Carrito*, *Mis compras* y *Cerrar sesión*. | `ControladorCarrito` | CU07, CU08, CU09 |
+| **PantallaEventosDisponibles** | Inicio del cliente: saludo, eventos activos, *Ver disponibilidad*, cantidad y *Agregar al carrito*. Botones *Carrito*, *Mis compras* y *Cerrar sesión*. | `ControladorCarrito` y `ControladorUsuarios` (saludo y *Cerrar sesión*) | CU02 (menú), CU07, CU08, CU09 |
 | **PantallaCarrito** | Ítems, total, cambiar cantidad, quitar y *Confirmar compra*. | `ControladorCarrito` y `ControladorCompras` | CU09 (5a), CU10 |
 | **PantallaPago** | Monto, medio de pago y sus datos. *Pagar* y *Cancelar pago*. | `ControladorCompras` | CU11 |
 | **PantallaHistorial** | Compras del cliente con *Ver comprobante* y *Cancelar compra*. | `ControladorCompras` | CU13, CU12, CU14 |
@@ -223,6 +231,8 @@ Para no llenar el diagrama de flechas, la relación pantalla → controlador va 
   - Tiene los métodos para hablar con el usuario usando `JOptionPane`: `mostrarMensaje`, `mostrarError`, `confirmar` (sí/no) y `mostrarTexto` (el comprobante, en un área de texto). Así ningún controlador usa Swing directamente.
 - **`Pantalla`** es la clase abstracta de todas las pantallas (`JPanel`). Tiene la referencia a la ventana y obliga a cada pantalla a implementar `actualizar()`. Gracias a esto, `VentanaPrincipal.mostrar` funciona igual con cualquier pantalla (**polimorfismo**).
 - **Cada pantalla implementa `ActionListener`** (regla del proyecto: nada de lambdas ni clases anónimas). En `actionPerformed` se pregunta qué botón se tocó (`e.getSource() == botonX`) y se llama a **un** método del controlador. No hay ninguna regla de negocio en las pantallas.
+  - **Excepción: los botones que solo cambian de pantalla** y no llevan datos (*Registrarse* en el login, *Volver* en el registro) llaman directo a `ventana.mostrar(...)`. Pasar por el controlador sería un método que no hace nada más que eso.
+- **`crearTitulo` y `agregarFila`** (protegidos, en `Pantalla`) arman el título y las filas "etiqueta + campo" de los formularios. Están en la clase abstracta para que todas las pantallas se vean igual sin repetir código.
 - **Las pantallas leen el modelo para mostrarlo:** por ejemplo, `PantallaMisEventos` le pide al controlador la lista de eventos y arma la tabla con `getNombre()`, `getFecha()`, etc. Nunca llaman a un método que cambie el modelo: eso pasa siempre por el controlador.
 - **No hay pantalla de comprobante ni de menú:** el comprobante se muestra con `mostrarTexto` (un diálogo) y el "menú según el rol" es directamente la pantalla de inicio de cada rol (`PantallaMisEventos` o `PantallaEventosDisponibles`). Son menos clases para la misma funcionalidad.
 
@@ -256,9 +266,13 @@ classDiagram
     }
 
     class ControladorUsuarios {
+        +String TIPO_CLIENTE$
+        +String TIPO_ORGANIZADOR$
         +registrar(nombre, email, contrasenia, tipo) void
         +iniciarSesion(email, contrasenia) void
         +cerrarSesion() void
+        +getUsuarioActual() Usuario
+        -crearUsuario(nombre, email, contrasenia, tipo) Usuario
     }
 
     class ControladorEventos {
@@ -371,6 +385,10 @@ classDiagram
 - **Estado entre pantallas:** cuando un caso de uso pasa por más de una pantalla, el controlador recuerda el objeto en uso:
   - `ControladorEventos.eventoSeleccionado`: el evento que se va a modificar o al que se le asignan artistas. Si es `null`, el formulario está en modo "crear".
   - `ControladorCompras.compraEnCurso`: la `Compra` `PENDIENTE` que se crea al confirmar el carrito (CU10) y se paga en `PantallaPago` (CU11). Si se rechaza el pago, la compra sigue en curso y se puede reintentar; si se cancela el pago, se descarta (`null`) y se vuelve al carrito.
+- **`ControladorUsuarios`:**
+  - `TIPO_CLIENTE` y `TIPO_ORGANIZADOR` son los textos del combo de `PantallaRegistro`. La pantalla arma el combo con estas constantes, así el texto que llega a `registrar` es exactamente el que el controlador compara.
+  - `crearUsuario` (privado) hace `new Organizador(...)` o `new Cliente(...)` según el tipo elegido. Los constructores validan los datos.
+  - `getUsuarioActual()` lo usan las pantallas de inicio para saludar (“Hola, Ana”).
 - **Métodos privados de `ControladorCompras`:**
   - `procesarPago(MedioDePago pago)`: lo llaman `pagarConTarjeta` y `pagarConTransferencia` después de crear el pago. Registra el pago, confirma la compra, genera el comprobante, vacía el carrito y guarda. Así esos pasos se escriben una sola vez para los dos medios.
   - `armarResumen(Carrito carrito)`: arma el texto del resumen que se muestra antes de pagar (CU10, paso 2).

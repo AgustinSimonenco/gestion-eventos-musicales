@@ -50,7 +50,7 @@ Si no se encuentra ningún usuario con ese email, `autenticar` no llama a `valid
 
 ## Paso a paso
 
-1. **`PantallaLogin.actionPerformed`** ve que se tocó `botonIngresar`. Lee `campoEmail.getText()` y la contraseña (`new String(campoContrasenia.getPassword())`, porque un `JPasswordField` devuelve un arreglo de `char`). Llama a `controlador.iniciarSesion(email, contrasenia)`.
+1. **`PantallaLogin.actionPerformed`** ve que se tocó `botonIngresar`. Lee `campoEmail.getText()` y la contraseña (`new String(campoContrasenia.getPassword())`, porque un `JPasswordField` devuelve un arreglo de `char`). Llama a `controlador.iniciarSesion(email, contrasenia)`. Lo mismo pasa si se aprieta Enter en el campo de la contraseña (`e.getSource() == campoContrasenia`).
 2. **`ControladorUsuarios.iniciarSesion`** le pide a la `Sesion` los datos cargados y llama a `DatosSistema.autenticar`.
 3. **`DatosSistema.autenticar`** recorre la lista de usuarios buscando el email. Si lo encuentra, le pregunta a **ese** usuario si la contraseña es la suya (`validarContrasenia`). La contraseña se compara adentro de `Usuario`, que es el que la tiene (GRASP Experto).
 4. **Si todo está bien**, devuelve el usuario. El controlador lo guarda en la sesión (`setUsuarioActual`) y le pregunta `getTipo()`.
