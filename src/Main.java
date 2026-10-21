@@ -1,16 +1,21 @@
+import controlador.ControladorUsuarios;
 import controlador.Sesion;
 import excepciones.PersistenciaException;
 import javax.swing.JOptionPane;
 import persistencia.PersistenciaArchivo;
 import persistencia.Persistencia;
+import vista.PantallaEventosDisponibles;
+import vista.PantallaLogin;
+import vista.PantallaMisEventos;
+import vista.PantallaRegistro;
 import vista.VentanaPrincipal;
 
 /**
  * Punto de entrada del programa. Solo arma los objetos y abre la ventana.
  * <p>
  * Orden (p7): persistencia, sesión (que carga los datos), ventana,
- * controladores y pantallas. Los controladores y las pantallas se agregan
- * desde la etapa E5.
+ * controladores y pantallas. Cada etapa agrega acá los controladores y las
+ * pantallas de sus casos de uso.
  */
 public class Main {
 
@@ -28,7 +33,19 @@ public class Main {
             Persistencia persistencia = new PersistenciaArchivo(ARCHIVO_DATOS);
             Sesion sesion = new Sesion(persistencia);
             VentanaPrincipal ventana = new VentanaPrincipal();
-            // E5: acá se crean los controladores con (sesion, ventana) y las pantallas
+
+            // Controladores: todos comparten la misma sesión y la misma ventana
+            ControladorUsuarios controladorUsuarios = new ControladorUsuarios(sesion, ventana);
+
+            // Pantallas: cada una recibe el controlador que usa
+            ventana.agregarPantalla(VentanaPrincipal.LOGIN, new PantallaLogin(ventana, controladorUsuarios));
+            ventana.agregarPantalla(VentanaPrincipal.REGISTRO, new PantallaRegistro(ventana, controladorUsuarios));
+            ventana.agregarPantalla(VentanaPrincipal.MIS_EVENTOS,
+                    new PantallaMisEventos(ventana, controladorUsuarios));
+            ventana.agregarPantalla(VentanaPrincipal.EVENTOS_DISPONIBLES,
+                    new PantallaEventosDisponibles(ventana, controladorUsuarios));
+
+            ventana.mostrar(VentanaPrincipal.LOGIN);
             ventana.setVisible(true);
         } catch (PersistenciaException e) {
             // Sin datos no se puede trabajar: se avisa y el programa termina
