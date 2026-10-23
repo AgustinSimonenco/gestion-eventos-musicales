@@ -289,8 +289,16 @@ public class Evento implements Serializable {
         this.precioEntrada = precioEntrada;
     }
 
-    // Un evento cancelado o finalizado ya no se puede modificar ni cancelar
-    private void verificarVigente(String accion) throws EventoException {
+    /**
+     * Controla que el evento todavía se pueda cambiar: uno cancelado o
+     * finalizado ya no se puede modificar ni cancelar. Es público para que el
+     * controlador lo pregunte <b>antes</b> de abrir el formulario (CU04) o de
+     * pedir la confirmación (CU05), y no recién al final.
+     *
+     * @param accion lo que se quiere hacer, para el mensaje: "modificar" o "cancelar"
+     * @throws EventoException si el evento está cancelado o finalizado
+     */
+    public void verificarVigente(String accion) throws EventoException {
         if (estado == EstadoEvento.CANCELADO || estado == EstadoEvento.FINALIZADO) {
             throw new EventoException("No se puede " + accion + " un evento "
                     + estado.toString().toLowerCase() + ".");

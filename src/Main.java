@@ -1,10 +1,14 @@
+import controlador.ControladorArtistas;
+import controlador.ControladorEventos;
 import controlador.ControladorUsuarios;
 import controlador.Sesion;
 import excepciones.PersistenciaException;
 import javax.swing.JOptionPane;
 import persistencia.PersistenciaArchivo;
 import persistencia.Persistencia;
+import vista.PantallaArtistas;
 import vista.PantallaEventosDisponibles;
+import vista.PantallaFormularioEvento;
 import vista.PantallaLogin;
 import vista.PantallaMisEventos;
 import vista.PantallaRegistro;
@@ -36,12 +40,17 @@ public class Main {
 
             // Controladores: todos comparten la misma sesión y la misma ventana
             ControladorUsuarios controladorUsuarios = new ControladorUsuarios(sesion, ventana);
+            ControladorEventos controladorEventos = new ControladorEventos(sesion, ventana);
+            ControladorArtistas controladorArtistas = new ControladorArtistas(sesion, ventana);
 
             // Pantallas: cada una recibe el controlador que usa
             ventana.agregarPantalla(VentanaPrincipal.LOGIN, new PantallaLogin(ventana, controladorUsuarios));
             ventana.agregarPantalla(VentanaPrincipal.REGISTRO, new PantallaRegistro(ventana, controladorUsuarios));
             ventana.agregarPantalla(VentanaPrincipal.MIS_EVENTOS,
-                    new PantallaMisEventos(ventana, controladorUsuarios));
+                    new PantallaMisEventos(ventana, controladorEventos, controladorUsuarios));
+            ventana.agregarPantalla(VentanaPrincipal.FORMULARIO_EVENTO,
+                    new PantallaFormularioEvento(ventana, controladorEventos));
+            ventana.agregarPantalla(VentanaPrincipal.ARTISTAS, new PantallaArtistas(ventana, controladorArtistas));
             ventana.agregarPantalla(VentanaPrincipal.EVENTOS_DISPONIBLES,
                     new PantallaEventosDisponibles(ventana, controladorUsuarios));
 

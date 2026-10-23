@@ -1,6 +1,7 @@
 package modelo;
 
 import excepciones.ArtistaException;
+import excepciones.DatosInvalidosException;
 import excepciones.UsuarioException;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -93,7 +94,11 @@ public class DatosSistema implements Serializable {
      */
     public List<Evento> getEventosDe(Organizador organizador) {
         List<Evento> resultado = new ArrayList<Evento>();
+        LocalDate hoy = LocalDate.now();
         for (Evento evento : eventos) {
+            // Igual que en getEventosDisponibles: un evento que ya pasó se
+            // tiene que ver como FINALIZADO
+            evento.actualizarEstado(hoy);
             if (evento.getOrganizador().getEmail().equals(organizador.getEmail())) {
                 resultado.add(evento);
             }
@@ -127,12 +132,27 @@ public class DatosSistema implements Serializable {
      * @throws ArtistaException si ya hay un artista con ese nombre
      */
     public void agregarArtista(Artista artista) throws ArtistaException {
-        for (Artista existente : artistas) {
-            if (existente.getNombre().equalsIgnoreCase(artista.getNombre())) {
-                throw new ArtistaException("Ya existe un artista llamado " + artista.getNombre() + ".");
-            }
-        }
+        verificarNombreLibre(artista.getNombre(), null);
         artistas.add(artista);
+    }
+
+    /**
+     * Cambia los datos de un artista del catálogo (CU15, 2a). Está acá y no
+     * solo en {@link Artista} porque hay que recorrer el catálogo para ver
+     * que el nombre nuevo no lo tenga otro artista.
+     *
+     * @param artista       artista a modificar
+     * @param nombre        nombre nuevo
+     * @param generoMusical género nuevo
+     * @throws ArtistaException        si otro artista ya tiene ese nombre
+     * @throws DatosInvalidosException si el nombre o el género están vacíos
+     */
+    public void modificarArtista(Artista artista, String nombre, String generoMusical)
+            throws ArtistaException, DatosInvalidosException {
+        if (nombre != null) {
+            verificarNombreLibre(nombre.trim(), artista);
+        }
+        artista.modificar(nombre, generoMusical);
     }
 
     /**
@@ -159,6 +179,17 @@ public class DatosSistema implements Serializable {
      */
     public List<Artista> getArtistas() {
         return new ArrayList<Artista>(artistas);
+    }
+
+    // Controla que ningún artista (salvo "excepto", el que se está
+    // modificando) se llame igual. Sin importar mayúsculas: "Soda" y "SODA"
+    // son el mismo nombre.
+    private void verificarNombreLibre(String nombre, Artista excepto) throws ArtistaException {
+        for (Artista existente : artistas) {
+            if (existente != excepto && existente.getNombre().equalsIgnoreCase(nombre)) {
+                throw new ArtistaException("Ya existe un artista llamado " + nombre + ".");
+            }
+        }
     }
 
     // Busca sin importar mayúsculas: "Ana@mail.com" y "ana@mail.com" son el mismo
