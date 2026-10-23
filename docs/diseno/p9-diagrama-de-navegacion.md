@@ -64,7 +64,10 @@ stateDiagram-v2
 
 - **El mismo formulario sirve para crear y modificar.** Si se llega con *Nuevo*, los campos están vacíos y se ve la lista de artistas para elegir (D-002). Si se llega con *Modificar*, los campos vienen con los datos del evento y la lista de artistas no se muestra, porque los artistas se cambian en `PantallaAsignarArtistas` (CU06).
 - **Volver desde `PantallaArtistas`** siempre lleva a `PantallaMisEventos`, aunque se haya llegado desde el formulario o desde la asignación. Es más simple de programar y de explicar; al volver, el organizador entra de nuevo al evento y ya ve el artista nuevo (ver "Decisiones tomadas" en la bitácora del 18/10).
-- **Sin evento elegido:** *Modificar*, *Cancelar evento* y *Artistas del evento* necesitan una fila elegida en la tabla. Si no hay ninguna, la pantalla muestra un aviso y no navega.
+- **Sin evento elegido:** *Modificar*, *Cancelar evento* y *Artistas del evento* necesitan una fila elegida en la tabla. Si no hay ninguna, la pantalla muestra un aviso ("Elegí un evento de la tabla.") y no navega. Lo mismo pasa en `PantallaArtistas` con *Modificar* y *Baja*.
+- **Evento cancelado o finalizado:** *Modificar* y *Cancelar evento* muestran el error y se quedan en `PantallaMisEventos`, sin abrir el formulario ni preguntar nada (el controlador llama antes a `Evento.verificarVigente`).
+- **Después de *Alta*, *Modificar* o *Baja* de un artista** se queda en `PantallaArtistas` con la tabla recargada. *Baja* pregunta antes "¿Dar de baja a ...?".
+- *Gestionar artistas*, *Nuevo artista* y los *Volver* solo cambian de pantalla: la pantalla llama directo a `ventana.mostrar(...)`. *Nuevo* pasa por `ControladorEventos.nuevoEvento()`, que deja el formulario en modo crear.
 
 ## 3. Cliente
 

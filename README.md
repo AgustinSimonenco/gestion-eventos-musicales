@@ -4,7 +4,7 @@ Trabajo Práctico Integrador — **Algoritmos I** (2026, 2.º cuatrimestre)
 
 Aplicación de escritorio para administrar recitales: gestión de eventos, asignación de artistas, venta de entradas y registro de pagos. Centraliza la administración de eventos y la interacción con los usuarios.
 
-> 🚧 Etapa actual: implementación. El 20/10 se armó el esqueleto (E4): modelo completo, persistencia, excepciones y ventana vacía. El 21/10 (E5) se agregaron el registro, el inicio de sesión y la pantalla de inicio de cada rol.
+> 🚧 Etapa actual: implementación. El 20/10 se armó el esqueleto (E4): modelo completo, persistencia, excepciones y ventana vacía. El 21/10 (E5) se agregaron el registro, el inicio de sesión y la pantalla de inicio de cada rol. El 23/10 (E6 y E7) se agregaron la gestión de artistas y crear, modificar y cancelar eventos.
 
 ## Actores
 

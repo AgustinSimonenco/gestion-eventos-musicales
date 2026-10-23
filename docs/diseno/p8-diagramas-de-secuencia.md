@@ -14,7 +14,7 @@ Elegidos el 17/10 (D-005, aprobado). Entre los cinco aparecen todos los patrones
 | CU10 | [Confirmar compra](secuencias/CU10-confirmar-compra.md) (con CU11 y CU12) | Strategy (`MedioDePago`), Template Method (`Pago.procesar`), GRASP Creador (`Compra` crea `Entrada` y `Comprobante`). |
 | CU14 | [Cancelar compra](secuencias/CU14-cancelar-compra.md) | Anula entradas y libera capacidad: varios objetos del modelo cambian juntos. |
 
-**Otros diagramas.** Además de estos cinco, en la carpeta [`secuencias/`](secuencias/) hay un diagrama por cada caso de uso que se va programando, para la defensa: [CU01 Registrar usuario](secuencias/CU01-registrar-usuario.md).
+**Otros diagramas.** Además de estos cinco, en la carpeta [`secuencias/`](secuencias/) hay un diagrama por cada caso de uso que se va programando, para la defensa: [CU01 Registrar usuario](secuencias/CU01-registrar-usuario.md), [CU04 Modificar evento](secuencias/CU04-modificar-evento.md), [CU05 Cancelar evento](secuencias/CU05-cancelar-evento.md) y [CU15 Gestionar artistas](secuencias/CU15-gestionar-artistas.md).
 
 ## Cómo leer los diagramas
 

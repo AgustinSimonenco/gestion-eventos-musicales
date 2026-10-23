@@ -80,7 +80,7 @@ classDiagram
         +getArtistas() List~Artista~
         -validarDatos(nombre, fecha, lugar, capacidad, precioEntrada) void
         -guardarDatos(nombre, fecha, lugar, capacidad, precioEntrada) void
-        -verificarVigente(String accion) void
+        +verificarVigente(String accion) void
         -actualizarCupo() void
     }
 
@@ -240,11 +240,12 @@ classDiagram
 | Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
 | Un evento se crea con al menos un artista (D-002) | constructor de `Evento` | `DatosInvalidosException` |
 | No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
-| Un evento cancelado o finalizado no se modifica ni se vuelve a cancelar | `Evento.verificarVigente` (privado, lo llaman `modificar` y `cancelar`) | `EventoException` |
+| Un evento cancelado o finalizado no se modifica ni se vuelve a cancelar | `Evento.verificarVigente` (lo llaman `modificar` y `cancelar`, y también `ControladorEventos` antes de abrir el formulario o de pedir confirmación) | `EventoException` |
 | Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
 | No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
 | Un artista no se asigna dos veces; un evento conserva al menos un artista | `Evento.asignarArtista` / `Evento.quitarArtista` | `ArtistaException` |
 | No se da de baja un artista asignado a un evento activo | `DatosSistema.eliminarArtista` | `ArtistaException` |
+| No hay dos artistas con el mismo nombre (ni al crear ni al modificar) | `DatosSistema.agregarArtista` / `DatosSistema.modificarArtista` | `ArtistaException` |
 | La cantidad pedida tiene que ser mayor a 0 | `Carrito.agregarItem` / `Carrito.cambiarCantidad` | `DatosInvalidosException` |
 | No se confirma un carrito vacío | `Carrito.verificarDisponibilidad` | `CompraException` |
 | La compra se confirma solo con un pago aprobado | `Compra.confirmar` | `CompraException` |
@@ -363,9 +364,11 @@ classDiagram
         +getEventosDe(Organizador organizador) List~Evento~
         +getEventosDisponibles(LocalDate hoy) List~Evento~
         +agregarArtista(Artista artista) void
+        +modificarArtista(Artista artista, String nombre, String generoMusical) void
         +eliminarArtista(Artista artista) void
         +getArtistas() List~Artista~
         -buscarUsuario(String email) Usuario
+        -verificarNombreLibre(String nombre, Artista excepto) void
     }
 
     Persistencia <|.. PersistenciaArchivo
@@ -478,3 +481,11 @@ Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que 
 - **Métodos privados** para no repetir código: `Evento.validarDatos`, `guardarDatos`, `verificarVigente` y `actualizarCupo`; `Carrito.buscarItemExistente` y `validarCantidad`; `Compra.crearEntradas`; `DatosSistema.buscarUsuario`; `Usuario.estaVacio`; `Artista.validar`; `PagoTarjeta.validarVencimiento`.
 - **`SistemaException` y `PersistenciaException`** tienen un constructor con la excepción original (`causa`), para que `PersistenciaArchivo` envuelva la `IOException` sin perderla.
 - **El monto de un pago puede ser 0** (un evento puede ser gratis, porque el precio puede ser 0). Lo que no puede ser es negativo.
+
+## Cambios hechos al programar artistas y eventos (23/10, etapas E6 y E7)
+
+- **`DatosSistema.modificarArtista(artista, nombre, genero)`** (nuevo): antes, `ControladorArtistas` iba a llamar directo a `Artista.modificar`, pero así se podía renombrar un artista con el nombre de otro. Como para controlarlo hay que recorrer todo el catálogo, lo hace `DatosSistema` (GRASP Experto) y después llama a `Artista.modificar`.
+- **`DatosSistema.verificarNombreLibre`** (privado): la búsqueda de nombre repetido que antes estaba dentro de `agregarArtista`. Ahora la usan `agregarArtista` y `modificarArtista`, así no se repite el `for`.
+- **`Evento.verificarVigente` pasó de privado a público:** el controlador lo llama **antes** de abrir el formulario de modificación (CU04) y antes de preguntar "¿Cancelar el evento?" (CU05). Así no se completa un formulario ni se confirma algo que después va a fallar. Es la misma idea que `Compra.verificarCancelable` en el CU14.
+- **`DatosSistema.getEventosDe`** ahora actualiza el estado de cada evento (`actualizarEstado(hoy)`) antes de devolverlos, igual que `getEventosDisponibles`. Así el organizador ve como `FINALIZADO` un evento cuya fecha ya pasó. La firma no cambió.
+
