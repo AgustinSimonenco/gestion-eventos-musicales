@@ -1,4 +1,5 @@
 import controlador.ControladorArtistas;
+import controlador.ControladorCarrito;
 import controlador.ControladorEventos;
 import controlador.ControladorUsuarios;
 import controlador.Sesion;
@@ -7,6 +8,7 @@ import javax.swing.JOptionPane;
 import persistencia.PersistenciaArchivo;
 import persistencia.Persistencia;
 import vista.PantallaArtistas;
+import vista.PantallaAsignarArtistas;
 import vista.PantallaEventosDisponibles;
 import vista.PantallaFormularioEvento;
 import vista.PantallaLogin;
@@ -42,6 +44,7 @@ public class Main {
             ControladorUsuarios controladorUsuarios = new ControladorUsuarios(sesion, ventana);
             ControladorEventos controladorEventos = new ControladorEventos(sesion, ventana);
             ControladorArtistas controladorArtistas = new ControladorArtistas(sesion, ventana);
+            ControladorCarrito controladorCarrito = new ControladorCarrito(sesion, ventana);
 
             // Pantallas: cada una recibe el controlador que usa
             ventana.agregarPantalla(VentanaPrincipal.LOGIN, new PantallaLogin(ventana, controladorUsuarios));
@@ -50,9 +53,11 @@ public class Main {
                     new PantallaMisEventos(ventana, controladorEventos, controladorUsuarios));
             ventana.agregarPantalla(VentanaPrincipal.FORMULARIO_EVENTO,
                     new PantallaFormularioEvento(ventana, controladorEventos));
+            ventana.agregarPantalla(VentanaPrincipal.ASIGNAR_ARTISTAS,
+                    new PantallaAsignarArtistas(ventana, controladorEventos));
             ventana.agregarPantalla(VentanaPrincipal.ARTISTAS, new PantallaArtistas(ventana, controladorArtistas));
             ventana.agregarPantalla(VentanaPrincipal.EVENTOS_DISPONIBLES,
-                    new PantallaEventosDisponibles(ventana, controladorUsuarios));
+                    new PantallaEventosDisponibles(ventana, controladorCarrito, controladorUsuarios));
 
             ventana.mostrar(VentanaPrincipal.LOGIN);
             ventana.setVisible(true);

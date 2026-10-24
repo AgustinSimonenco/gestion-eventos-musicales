@@ -11,17 +11,16 @@ import vista.VentanaPrincipal;
 
 /**
  * Coordina los casos de uso de eventos del organizador: CU03 Crear evento,
- * CU04 Modificar evento y CU05 Cancelar evento. En la E8 se agrega el CU06
- * Asignar artistas.
+ * CU04 Modificar evento, CU05 Cancelar evento y CU06 Asignar artistas.
  * <p>
- * Recuerda el evento en uso ({@code eventoSeleccionado}) porque el CU04
- * pasa por dos pantallas: se elige en "Mis eventos" y se edita en el
- * formulario.
+ * Recuerda el evento en uso ({@code eventoSeleccionado}) porque el CU04 y el
+ * CU06 pasan por dos pantallas: el evento se elige en "Mis eventos" y se
+ * trabaja en el formulario o en la pantalla de artistas del evento.
  */
 public class ControladorEventos extends Controlador {
 
-    // Evento que se está modificando. Si es null, el formulario está en
-    // modo "crear" (p7, "Estado entre pantallas").
+    // Evento que se está modificando o al que se le cambian los artistas. Si
+    // es null, el formulario está en modo "crear" (p7, "Estado entre pantallas").
     private Evento eventoSeleccionado;
 
     /**
@@ -52,7 +51,8 @@ public class ControladorEventos extends Controlador {
     }
 
     /**
-     * @return el evento que se está modificando, o {@code null} si se está creando uno
+     * @return el evento que se está modificando o al que se le cambian los
+     *         artistas, o {@code null} si se está creando uno
      */
     public Evento getEventoSeleccionado() {
         return eventoSeleccionado;
@@ -162,6 +162,59 @@ public class ControladorEventos extends Controlador {
             ventana.mostrarMensaje("El evento " + evento.getNombre() + " quedó cancelado.");
             // Se vuelve a mostrar para que la tabla diga CANCELADO
             ventana.mostrar(VentanaPrincipal.MIS_EVENTOS);
+        } catch (SistemaException e) {
+            ventana.mostrarError(e.getMessage());
+        }
+    }
+
+    /**
+     * Abre la pantalla de artistas del evento elegido (CU06, pasos 1 y 2).
+     * Igual que al modificar, primero controla que sea del organizador y que
+     * no esté cancelado ni finalizado (precondición del CU06).
+     *
+     * @param evento evento elegido en la tabla
+     */
+    public void elegirParaArtistas(Evento evento) {
+        try {
+            evento.verificarOrganizador(sesion.getOrganizador());
+            evento.verificarVigente("cambiar los artistas de");
+            eventoSeleccionado = evento;
+            ventana.mostrar(VentanaPrincipal.ASIGNAR_ARTISTAS);
+        } catch (SistemaException e) {
+            ventana.mostrarError(e.getMessage());
+        }
+    }
+
+    /**
+     * Agrega un artista del catálogo al evento seleccionado (CU06, pasos 3 y 4).
+     *
+     * @param artista artista elegido en la lista de registrados
+     */
+    public void asignarArtista(Artista artista) {
+        try {
+            // Evento.asignarArtista controla que no esté repetido (3a)
+            eventoSeleccionado.asignarArtista(artista);
+            sesion.guardar();
+            ventana.mostrarMensaje(artista.getNombre() + " se agregó al evento.");
+            // Se vuelve a mostrar para que la lista de asignados lo incluya
+            ventana.mostrar(VentanaPrincipal.ASIGNAR_ARTISTAS);
+        } catch (SistemaException e) {
+            ventana.mostrarError(e.getMessage());
+        }
+    }
+
+    /**
+     * Quita un artista del evento seleccionado (CU06, 3c).
+     *
+     * @param artista artista elegido en la lista de asignados
+     */
+    public void quitarArtista(Artista artista) {
+        try {
+            // Evento.quitarArtista no deja quitar el último artista
+            eventoSeleccionado.quitarArtista(artista);
+            sesion.guardar();
+            ventana.mostrarMensaje(artista.getNombre() + " ya no está en el evento.");
+            ventana.mostrar(VentanaPrincipal.ASIGNAR_ARTISTAS);
         } catch (SistemaException e) {
             ventana.mostrarError(e.getMessage());
         }

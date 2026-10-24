@@ -6,6 +6,7 @@ import excepciones.EventoException;
 import excepciones.SinDisponibilidadException;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,10 @@ import java.util.List;
 public class Evento implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // Para mostrar la fecha en el detalle (CU08). Es static, así que no se
+    // guarda en el archivo junto con cada evento
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private int id;
     private String nombre;
@@ -114,13 +119,28 @@ public class Evento implements Serializable {
      * @throws SinDisponibilidadException si no quedan suficientes entradas
      */
     public void verificarDisponibilidad(int cantidad) throws EventoException {
-        if (estado == EstadoEvento.CANCELADO || estado == EstadoEvento.FINALIZADO) {
-            throw new EventoException("El evento " + nombre + " no está disponible.");
-        }
+        verificarALaVenta();
         int disponibles = getEntradasDisponibles();
         if (cantidad > disponibles) {
             throw new SinDisponibilidadException("Para " + nombre + " quedan solo "
                     + disponibles + " entradas.", disponibles);
+        }
+    }
+
+    /**
+     * Controla que el evento tenga entradas a la venta, es decir, que no esté
+     * cancelado ni finalizado (CU08, 2a y 2b). Un evento agotado sí pasa:
+     * sigue a la venta, solo que no le quedan lugares.
+     *
+     * @throws EventoException si el evento está cancelado o ya se realizó
+     */
+    public void verificarALaVenta() throws EventoException {
+        if (estado == EstadoEvento.CANCELADO) {
+            throw new EventoException("El evento " + nombre
+                    + " fue cancelado y no tiene entradas a la venta.");
+        }
+        if (estado == EstadoEvento.FINALIZADO) {
+            throw new EventoException("El evento " + nombre + " ya se realizó y no está disponible.");
         }
     }
 
@@ -159,9 +179,12 @@ public class Evento implements Serializable {
      * Agrega un artista al evento (CU06).
      *
      * @param artista artista a agregar
-     * @throws ArtistaException si ya estaba asignado
+     * @throws ArtistaException si ya estaba asignado (3a)
+     * @throws EventoException  si el evento está cancelado o finalizado
      */
-    public void asignarArtista(Artista artista) throws ArtistaException {
+    public void asignarArtista(Artista artista) throws ArtistaException, EventoException {
+        // Precondición del CU06: el evento no está cancelado
+        verificarVigente("cambiar los artistas de");
         if (tieneArtista(artista)) {
             throw new ArtistaException(artista.getNombre() + " ya está en el evento.");
         }
@@ -173,9 +196,11 @@ public class Evento implements Serializable {
      * menos uno.
      *
      * @param artista artista a quitar
-     * @throws ArtistaException si no estaba asignado o es el último
+     * @throws ArtistaException si no estaba asignado o es el último (3c)
+     * @throws EventoException  si el evento está cancelado o finalizado
      */
-    public void quitarArtista(Artista artista) throws ArtistaException {
+    public void quitarArtista(Artista artista) throws ArtistaException, EventoException {
+        verificarVigente("cambiar los artistas de");
         if (!tieneArtista(artista)) {
             throw new ArtistaException(artista.getNombre() + " no está en el evento.");
         }
@@ -191,6 +216,46 @@ public class Evento implements Serializable {
      */
     public boolean tieneArtista(Artista artista) {
         return artistas.contains(artista);
+    }
+
+    /**
+     * Arma los nombres de los artistas separados por coma, para la tabla del
+     * cliente y el detalle. Por ejemplo: "Soda Stereo, Charly García".
+     *
+     * @return nombres de los artistas del evento
+     */
+    public String getNombresArtistas() {
+        String nombres = "";
+        for (Artista artista : artistas) {
+            // Antes de cada nombre, menos el primero, va una coma
+            if (!nombres.isEmpty()) {
+                nombres = nombres + ", ";
+            }
+            nombres = nombres + artista.getNombre();
+        }
+        return nombres;
+    }
+
+    /**
+     * Arma el texto que ve el cliente al consultar la disponibilidad (CU08,
+     * paso 4). Si no quedan entradas, lo muestra como AGOTADO (3a).
+     *
+     * @return texto con nombre, fecha, lugar, artistas, precio y entradas disponibles
+     */
+    public String generarDetalle() {
+        StringBuilder texto = new StringBuilder();
+        texto.append(nombre).append("\n\n");
+        texto.append("Fecha: ").append(fecha.format(FORMATO_FECHA)).append("\n");
+        texto.append("Lugar: ").append(lugar).append("\n");
+        texto.append("Artistas: ").append(getNombresArtistas()).append("\n");
+        texto.append("Precio por entrada: $").append(String.format("%.2f", precioEntrada)).append("\n");
+        int disponibles = getEntradasDisponibles();
+        if (disponibles == 0) {
+            texto.append("Entradas disponibles: 0 (AGOTADO)\n");
+        } else {
+            texto.append("Entradas disponibles: ").append(disponibles).append("\n");
+        }
+        return texto.toString();
     }
 
     /**
@@ -291,11 +356,13 @@ public class Evento implements Serializable {
 
     /**
      * Controla que el evento todavía se pueda cambiar: uno cancelado o
-     * finalizado ya no se puede modificar ni cancelar. Es público para que el
+     * finalizado ya no se puede modificar, cancelar ni cambiarle los artistas
+     * (CU06). Es público para que el
      * controlador lo pregunte <b>antes</b> de abrir el formulario (CU04) o de
      * pedir la confirmación (CU05), y no recién al final.
      *
-     * @param accion lo que se quiere hacer, para el mensaje: "modificar" o "cancelar"
+     * @param accion lo que se quiere hacer, para el mensaje: "modificar",
+     *               "cancelar" o "cambiar los artistas de"
      * @throws EventoException si el evento está cancelado o finalizado
      */
     public void verificarVigente(String accion) throws EventoException {

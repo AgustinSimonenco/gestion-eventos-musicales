@@ -22,8 +22,8 @@ import modelo.Evento;
  * <p>
  * Muestra la tabla con sus eventos y los botones <i>Nuevo</i> (CU03),
  * <i>Modificar</i> (CU04), <i>Cancelar evento</i> (CU05),
- * <i>Gestionar artistas</i> (CU15) y <i>Cerrar sesión</i>. En la E8 se
- * agrega <i>Artistas del evento</i> (CU06).
+ * <i>Artistas del evento</i> (CU06), <i>Gestionar artistas</i> (CU15) y
+ * <i>Cerrar sesión</i>.
  */
 public class PantallaMisEventos extends Pantalla implements ActionListener {
 
@@ -37,6 +37,7 @@ public class PantallaMisEventos extends Pantalla implements ActionListener {
     private JButton botonNuevo;
     private JButton botonModificar;
     private JButton botonCancelarEvento;
+    private JButton botonArtistasEvento;
     private JButton botonGestionarArtistas;
     private JButton botonCerrarSesion;
 
@@ -59,11 +60,13 @@ public class PantallaMisEventos extends Pantalla implements ActionListener {
         botonNuevo = new JButton("Nuevo");
         botonModificar = new JButton("Modificar");
         botonCancelarEvento = new JButton("Cancelar evento");
+        botonArtistasEvento = new JButton("Artistas del evento");
         botonGestionarArtistas = new JButton("Gestionar artistas");
         botonCerrarSesion = new JButton("Cerrar sesión");
         botonNuevo.addActionListener(this);
         botonModificar.addActionListener(this);
         botonCancelarEvento.addActionListener(this);
+        botonArtistasEvento.addActionListener(this);
         botonGestionarArtistas.addActionListener(this);
         botonCerrarSesion.addActionListener(this);
         armar();
@@ -79,6 +82,7 @@ public class PantallaMisEventos extends Pantalla implements ActionListener {
         botones.add(botonNuevo);
         botones.add(botonModificar);
         botones.add(botonCancelarEvento);
+        botones.add(botonArtistasEvento);
         botones.add(botonGestionarArtistas);
         botones.add(botonCerrarSesion);
 
@@ -127,7 +131,8 @@ public class PantallaMisEventos extends Pantalla implements ActionListener {
         } else if (e.getSource() == botonCerrarSesion) {
             controladorUsuarios.cerrarSesion();
         } else {
-            // Modificar y Cancelar evento necesitan un evento elegido (p9)
+            // Modificar, Cancelar evento y Artistas del evento necesitan un
+            // evento elegido (p9)
             Evento evento = getEventoElegido();
             if (evento == null) {
                 ventana.mostrarError("Elegí un evento de la tabla.");
@@ -135,6 +140,8 @@ public class PantallaMisEventos extends Pantalla implements ActionListener {
                 controlador.elegirParaModificar(evento);
             } else if (e.getSource() == botonCancelarEvento) {
                 controlador.cancelarEvento(evento);
+            } else if (e.getSource() == botonArtistasEvento) {
+                controlador.elegirParaArtistas(evento);
             }
         }
     }
