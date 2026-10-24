@@ -65,7 +65,8 @@ stateDiagram-v2
 - **El mismo formulario sirve para crear y modificar.** Si se llega con *Nuevo*, los campos están vacíos y se ve la lista de artistas para elegir (D-002). Si se llega con *Modificar*, los campos vienen con los datos del evento y la lista de artistas no se muestra, porque los artistas se cambian en `PantallaAsignarArtistas` (CU06).
 - **Volver desde `PantallaArtistas`** siempre lleva a `PantallaMisEventos`, aunque se haya llegado desde el formulario o desde la asignación. Es más simple de programar y de explicar; al volver, el organizador entra de nuevo al evento y ya ve el artista nuevo (ver "Decisiones tomadas" en la bitácora del 18/10).
 - **Sin evento elegido:** *Modificar*, *Cancelar evento* y *Artistas del evento* necesitan una fila elegida en la tabla. Si no hay ninguna, la pantalla muestra un aviso ("Elegí un evento de la tabla.") y no navega. Lo mismo pasa en `PantallaArtistas` con *Modificar* y *Baja*.
-- **Evento cancelado o finalizado:** *Modificar* y *Cancelar evento* muestran el error y se quedan en `PantallaMisEventos`, sin abrir el formulario ni preguntar nada (el controlador llama antes a `Evento.verificarVigente`).
+- **Evento cancelado o finalizado:** *Modificar*, *Cancelar evento* y *Artistas del evento* muestran el error y se quedan en `PantallaMisEventos`, sin abrir el formulario ni la asignación ni preguntar nada (el controlador llama antes a `Evento.verificarVigente`).
+- **Después de *Asignar al evento* o *Quitar del evento*** (CU06) se muestra un mensaje corto y se queda en `PantallaAsignarArtistas` con las listas recargadas. Si el artista ya estaba (3a) o es el último del evento (3c), se muestra el error y no cambia nada. Sin artista elegido en la lista, la pantalla avisa y no llama al controlador.
 - **Después de *Alta*, *Modificar* o *Baja* de un artista** se queda en `PantallaArtistas` con la tabla recargada. *Baja* pregunta antes "¿Dar de baja a ...?".
 - *Gestionar artistas*, *Nuevo artista* y los *Volver* solo cambian de pantalla: la pantalla llama directo a `ventana.mostrar(...)`. *Nuevo* pasa por `ControladorEventos.nuevoEvento()`, que deja el formulario en modo crear.
 
@@ -110,6 +111,8 @@ stateDiagram-v2
     state "Diálogo: comprobante" as Comprobante2
 ```
 
+- **Sin eventos (CU07, 2a):** la tabla queda vacía y arriba dice "Por ahora no hay eventos disponibles.". No se abre un diálogo, porque aparecería cada vez que se entra a la pantalla.
+- **Ver disponibilidad (CU08):** necesita una fila elegida (si no, avisa "Elegí un evento de la tabla."). Muestra el detalle en un diálogo (`mostrarTexto`) y, al aceptar, se queda en la misma pantalla. Si el evento fue cancelado o ya pasó desde que se armó la tabla (2a y 2b), muestra el error y **recarga la tabla**, así ese evento desaparece.
 - **Agregar al carrito con error** (cantidad 0, sin lugar): se muestra el error (por ejemplo "quedan 3 entradas") y **se queda en `PantallaEventosDisponibles`** para corregir la cantidad (CU09, 2a y 3a).
 - **Confirmar compra (CU10):** `ControladorCompras.iniciarCompra` primero verifica el carrito. Si un evento fue cancelado o ya no tiene lugar, muestra el error y se queda en el carrito sin cobrar (4a). Si está todo bien, muestra el resumen con `confirmar(...)`; si el cliente acepta, se crea la compra `PENDIENTE` y se pasa a `PantallaPago`.
 - **Pago rechazado (CU11, 5a):** se muestra el motivo y se queda en `PantallaPago`, con la misma compra en curso. El cliente puede reintentar con otro medio o tocar *Cancelar pago*.

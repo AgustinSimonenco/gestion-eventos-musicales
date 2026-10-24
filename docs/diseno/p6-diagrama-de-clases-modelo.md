@@ -61,12 +61,15 @@ classDiagram
         +cancelar() void
         +verificarOrganizador(Organizador organizador) void
         +verificarDisponibilidad(int cantidad) void
+        +verificarALaVenta() void
         +ocuparLugares(int cantidad) void
         +liberarLugares(int cantidad) void
         +getEntradasDisponibles() int
         +asignarArtista(Artista artista) void
         +quitarArtista(Artista artista) void
         +tieneArtista(Artista artista) boolean
+        +getNombresArtistas() String
+        +generarDetalle() String
         +estaActivo() boolean
         +actualizarEstado(LocalDate hoy) void
         +getId() int
@@ -240,9 +243,10 @@ classDiagram
 | Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
 | Un evento se crea con al menos un artista (D-002) | constructor de `Evento` | `DatosInvalidosException` |
 | No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
-| Un evento cancelado o finalizado no se modifica ni se vuelve a cancelar | `Evento.verificarVigente` (lo llaman `modificar` y `cancelar`, y también `ControladorEventos` antes de abrir el formulario o de pedir confirmación) | `EventoException` |
+| Un evento cancelado o finalizado no se modifica, no se vuelve a cancelar y no se le cambian los artistas | `Evento.verificarVigente` (lo llaman `modificar`, `cancelar`, `asignarArtista` y `quitarArtista`, y también `ControladorEventos` antes de abrir el formulario, la pantalla de artistas del evento o de pedir confirmación) | `EventoException` |
 | Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
-| No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
+| No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` (usa `verificarALaVenta`) | `EventoException` / `SinDisponibilidadException` |
+| Al consultar la disponibilidad, un evento cancelado o finalizado se informa como tal (CU08, 2a y 2b) | `Evento.verificarALaVenta` | `EventoException` |
 | Un artista no se asigna dos veces; un evento conserva al menos un artista | `Evento.asignarArtista` / `Evento.quitarArtista` | `ArtistaException` |
 | No se da de baja un artista asignado a un evento activo | `DatosSistema.eliminarArtista` | `ArtistaException` |
 | No hay dos artistas con el mismo nombre (ni al crear ni al modificar) | `DatosSistema.agregarArtista` / `DatosSistema.modificarArtista` | `ArtistaException` |
@@ -489,3 +493,10 @@ Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que 
 - **`Evento.verificarVigente` pasó de privado a público:** el controlador lo llama **antes** de abrir el formulario de modificación (CU04) y antes de preguntar "¿Cancelar el evento?" (CU05). Así no se completa un formulario ni se confirma algo que después va a fallar. Es la misma idea que `Compra.verificarCancelable` en el CU14.
 - **`DatosSistema.getEventosDe`** ahora actualiza el estado de cada evento (`actualizarEstado(hoy)`) antes de devolverlos, igual que `getEventosDisponibles`. Así el organizador ve como `FINALIZADO` un evento cuya fecha ya pasó. La firma no cambió.
 
+
+## Cambios hechos al programar la asignación y la consulta (24/10, etapa E8)
+
+- **`Evento.verificarALaVenta()`** (nuevo, público): controla que el evento no esté cancelado ni finalizado, con un mensaje distinto para cada caso, como pide el CU08 (2a: "fue cancelado y no tiene entradas a la venta"; 2b: "ya se realizó"). Antes ese control estaba escrito dentro de `verificarDisponibilidad`; ahora `verificarDisponibilidad` lo llama, así no se repite. Un evento `AGOTADO` pasa el control, porque sigue a la venta aunque no le queden lugares.
+- **`Evento.getNombresArtistas()`** (nuevo): devuelve los nombres de los artistas separados por coma. Lo usan la tabla del cliente (CU07) y el detalle (CU08). Está en `Evento` porque es quien tiene la lista de artistas (GRASP Experto).
+- **`Evento.generarDetalle()`** (nuevo): arma el texto del CU08, paso 4 (nombre, fecha, lugar, artistas, precio y entradas disponibles). Si no quedan entradas, dice "0 (AGOTADO)" (3a). Es la misma idea que `Comprobante.generarTexto()`.
+- **`Evento.asignarArtista` y `quitarArtista` ahora llaman a `verificarVigente`:** la precondición del CU06 dice que el evento no está cancelado. Por eso, además de `ArtistaException`, pueden lanzar `EventoException`. La firma en el diagrama no cambia (las excepciones no se dibujan en los métodos).

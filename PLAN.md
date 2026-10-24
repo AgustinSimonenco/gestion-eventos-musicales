@@ -44,7 +44,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
 - [x] **E5 · 21/10 — Usuarios:** CU01 Registrarse, CU02 Iniciar sesión, menú según el rol.
 - [x] **E6 · 22/10 — Artistas y eventos:** CU15 Gestionar artistas, CU03 Crear evento.
 - [x] **E7 · 23/10 — Eventos (etapa liviana: es el día del parcial):** CU04 Modificar evento, CU05 Cancelar evento.
-- [ ] **E8 · 24/10 — Asignación y consulta:** CU06 Asignar artistas, CU07 Consultar eventos, CU08 Consultar disponibilidad.
+- [x] **E8 · 24/10 — Asignación y consulta:** CU06 Asignar artistas, CU07 Consultar eventos, CU08 Consultar disponibilidad.
 - [ ] **E9 · 25/10 — Carrito:** CU09 Agregar entradas al carrito (modificar y quitar ítems).
 - [ ] **E10 · 26/10 — Compra y pago:** CU10 Confirmar compra, CU11 Realizar pago (tarjeta y transferencia).
 - [ ] **E11 · 27/10 — Comprobante e historial:** CU12 Generar comprobante, CU13 Consultar historial. Revisar que los diagramas coincidan con el código para el Seguimiento II.
