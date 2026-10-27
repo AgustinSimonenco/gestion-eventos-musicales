@@ -17,22 +17,25 @@ sequenceDiagram
     participant E as Evento
 
     Note over U,V: el cliente inicia sesión (CU02) o vuelve a esta pantalla
-    V->>P: actualizar()
-    P->>C: getEventosDisponibles()
-    C->>S: getDatos()
-    S-->>C: datos
-    C->>D: getEventosDisponibles(hoy)
+    activate V
+    V->>+P: actualizar()
+    P->>+C: getEventosDisponibles()
+    C->>+S: getDatos()
+    S-->>-C: datos
+    C->>+D: getEventosDisponibles(hoy)
     loop por cada evento
-        D->>E: actualizarEstado(hoy)
+        D->>+E: actualizarEstado(hoy)
         Note right of E: si la fecha ya pasó, queda FINALIZADO
-        D->>E: estaActivo()
-        E-->>D: true o false
+        deactivate E
+        D->>+E: estaActivo()
+        E-->>-D: true o false
     end
-    D-->>C: eventos ACTIVO
-    C-->>P: eventos
+    D-->>-C: eventos ACTIVO
+    C-->>-P: eventos
     P->>P: eventosMostrados = eventos
     loop por cada evento
-        P->>E: getNombre(), getFecha(), getLugar(), getNombresArtistas(), getPrecioEntrada(), getEntradasDisponibles()
+        P->>+E: getNombre(), getFecha(), getLugar(), getNombresArtistas(), getPrecioEntrada(), getEntradasDisponibles()
+        E-->>-P: datos del evento
         P->>P: modeloTabla.addRow(...)
     end
     alt no hay ninguno (2a)
@@ -40,6 +43,8 @@ sequenceDiagram
     else hay eventos
         P->>P: etiquetaAviso = "Elegí un evento de la tabla ..."
     end
+    deactivate P
+    deactivate V
 ```
 
 ## Paso a paso

@@ -14,25 +14,33 @@ sequenceDiagram
     participant E as Evento
     participant V as VentanaPrincipal
 
-    U->>P: elige un evento y toca Ver disponibilidad
+    U->>+P: elige un evento y toca Ver disponibilidad
     P->>P: actionPerformed(e) y getEventoElegido()
-    P->>C: consultarDisponibilidad(evento)
-    C->>E: actualizarEstado(hoy)
+    P->>+C: consultarDisponibilidad(evento)
+    C->>+E: actualizarEstado(hoy)
     Note right of E: paso 2: si la fecha ya pasó, queda FINALIZADO
-    C->>E: verificarALaVenta()
-    alt cancelado (2a) o ya realizado (2b)
-        E--xC: EventoException
-        C->>V: mostrarError(e.getMessage())
-        C->>V: mostrar(EVENTOS_DISPONIBLES)
-        Note over P: la tabla se recarga y ese evento ya no aparece
-    else a la venta
-        C->>E: generarDetalle()
+    deactivate E
+    alt a la venta
+        C->>+E: verificarALaVenta()
+        deactivate E
+        C->>+E: generarDetalle()
         E->>E: getNombresArtistas() y getEntradasDisponibles()
-        Note right of E: paso 3; si quedan 0, dice AGOTADO (3a)
-        E-->>C: texto
-        C->>V: mostrarTexto("Disponibilidad", texto)
+        Note right of E: paso 3. Si quedan 0, dice AGOTADO (3a)
+        E-->>-C: texto
+        C->>+V: mostrarTexto("Disponibilidad", texto)
+        deactivate V
         Note over V: paso 4: nombre, fecha, lugar, artistas, precio y disponibles
+    else cancelado (2a) o ya realizado (2b)
+        C->>+E: verificarALaVenta()
+        E--x-C: EventoException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
+        C->>+V: mostrar(EVENTOS_DISPONIBLES)
+        deactivate V
+        Note over P: la tabla se recarga y ese evento ya no aparece
     end
+    deactivate C
+    deactivate P
 ```
 
 ## Paso a paso

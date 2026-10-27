@@ -16,32 +16,44 @@ sequenceDiagram
     participant PE as Persistencia
     participant V as VentanaPrincipal
 
-    O->>P: elige un evento y toca Cancelar evento
+    O->>+P: elige un evento y toca Cancelar evento
     P->>P: actionPerformed(e) y getEventoElegido()
-    P->>C: cancelarEvento(evento)
-    C->>S: getOrganizador()
-    S-->>C: organizador
-    C->>E: verificarOrganizador(organizador)
-    C->>E: verificarVigente("cancelar")
+    P->>+C: cancelarEvento(evento)
+    C->>+S: getOrganizador()
+    S-->>-C: organizador
     alt ya está cancelado o finalizado
-        E--xC: EventoException
-        C->>V: mostrarError(e.getMessage())
+        C->>+E: verificarOrganizador(organizador)
+        deactivate E
+        C->>+E: verificarVigente("cancelar")
+        E--x-C: EventoException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
     else se puede cancelar
-        C->>V: confirmar("¿Cancelar el evento ...?")
+        C->>+E: verificarOrganizador(organizador)
+        deactivate E
+        C->>+E: verificarVigente("cancelar")
+        deactivate E
+        C->>+V: confirmar("¿Cancelar el evento ...?")
+        V-->>-C: true o false
         alt elige Sí (paso 2)
-            V-->>C: true
-            C->>E: cancelar()
+            C->>+E: cancelar()
             E->>E: estado = CANCELADO
-            C->>S: guardar()
-            S->>PE: guardar(datos)
-            C->>V: mostrarMensaje("El evento ... quedó cancelado.")
-            C->>V: mostrar(MIS_EVENTOS)
+            deactivate E
+            C->>+S: guardar()
+            S->>+PE: guardar(datos)
+            deactivate PE
+            deactivate S
+            C->>+V: mostrarMensaje("El evento ... quedó cancelado.")
+            deactivate V
+            C->>+V: mostrar(MIS_EVENTOS)
+            deactivate V
             Note over V: la tabla muestra el estado CANCELADO
         else elige No
-            V-->>C: false
             Note over C: no se cambia nada
         end
     end
+    deactivate C
+    deactivate P
 ```
 
 ## Paso a paso

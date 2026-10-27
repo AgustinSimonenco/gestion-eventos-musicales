@@ -17,56 +17,89 @@ sequenceDiagram
     participant PE as Persistencia
     participant V as VentanaPrincipal
 
-    O->>PM: elige un evento y toca Artistas del evento
+    O->>+PM: elige un evento y toca Artistas del evento
     PM->>PM: actionPerformed(e) y getEventoElegido()
-    PM->>C: elegirParaArtistas(evento)
-    C->>S: getOrganizador()
-    S-->>C: organizador
-    C->>E: verificarOrganizador(organizador)
-    C->>E: verificarVigente("cambiar los artistas de")
+    PM->>+C: elegirParaArtistas(evento)
+    C->>+S: getOrganizador()
+    S-->>-C: organizador
     alt cancelado o finalizado (precondición)
-        E--xC: EventoException
-        C->>V: mostrarError(e.getMessage())
+        C->>+E: verificarOrganizador(organizador)
+        deactivate E
+        C->>+E: verificarVigente("cambiar los artistas de")
+        E--x-C: EventoException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over PM: se queda en Mis eventos
     else se puede
+        C->>+E: verificarOrganizador(organizador)
+        deactivate E
+        C->>+E: verificarVigente("cambiar los artistas de")
+        deactivate E
         C->>C: eventoSeleccionado = evento
-        C->>V: mostrar(ASIGNAR_ARTISTAS)
-        V->>PA: actualizar()
-        PA->>C: getEventoSeleccionado()
-        PA->>E: getArtistas()
-        PA->>C: getArtistas()
+        C->>+V: mostrar(ASIGNAR_ARTISTAS)
+        V->>+PA: actualizar()
+        PA->>+C: getEventoSeleccionado()
+        C-->>-PA: evento
+        PA->>+E: getArtistas()
+        E-->>-PA: artistas del evento
+        PA->>+C: getArtistas()
+        C-->>-PA: artistas registrados
         Note over PA: paso 2: lista del evento y lista del catálogo
+        deactivate PA
+        deactivate V
     end
+    deactivate C
+    deactivate PM
 
-    O->>PA: elige un artista registrado y toca Asignar al evento
+    O->>+PA: elige un artista registrado y toca Asignar al evento
     PA->>PA: actionPerformed(e) y listaRegistrados.getSelectedValue()
-    PA->>C: asignarArtista(artista)
-    C->>E: asignarArtista(artista)
-    E->>E: verificarVigente(...) y tieneArtista(artista)
-    alt ya estaba asignado (3a)
-        E--xC: ArtistaException
-        C->>V: mostrarError("... ya está en el evento.")
-    else no estaba
+    PA->>+C: asignarArtista(artista)
+    alt no estaba asignado
+        C->>+E: asignarArtista(artista)
+        E->>E: verificarVigente(...) y tieneArtista(artista)
         E->>E: artistas.add(artista)
-        C->>S: guardar()
-        S->>PE: guardar(datos)
-        C->>V: mostrarMensaje("... se agregó al evento.")
-        C->>V: mostrar(ASIGNAR_ARTISTAS)
+        deactivate E
+        C->>+S: guardar()
+        S->>+PE: guardar(datos)
+        deactivate PE
+        deactivate S
+        C->>+V: mostrarMensaje("... se agregó al evento.")
+        deactivate V
+        C->>+V: mostrar(ASIGNAR_ARTISTAS)
+        deactivate V
         Note over PA: actualizar() recarga las dos listas
+    else ya estaba asignado (3a)
+        C->>+E: asignarArtista(artista)
+        E->>E: verificarVigente(...) y tieneArtista(artista)
+        E--x-C: ArtistaException
+        C->>+V: mostrarError("... ya está en el evento.")
+        deactivate V
     end
+    deactivate C
+    deactivate PA
 
-    O->>PA: elige un artista del evento y toca Quitar del evento (3c)
-    PA->>C: quitarArtista(artista)
-    C->>E: quitarArtista(artista)
-    alt es el último artista del evento
-        E--xC: ArtistaException
-        C->>V: mostrarError("El evento tiene que tener al menos un artista.")
-    else le quedan otros
+    O->>+PA: elige un artista del evento y toca Quitar del evento (3c)
+    PA->>+C: quitarArtista(artista)
+    alt le quedan otros artistas
+        C->>+E: quitarArtista(artista)
         E->>E: artistas.remove(artista)
-        C->>S: guardar()
-        C->>V: mostrarMensaje("... ya no está en el evento.")
-        C->>V: mostrar(ASIGNAR_ARTISTAS)
+        deactivate E
+        C->>+S: guardar()
+        S->>+PE: guardar(datos)
+        deactivate PE
+        deactivate S
+        C->>+V: mostrarMensaje("... ya no está en el evento.")
+        deactivate V
+        C->>+V: mostrar(ASIGNAR_ARTISTAS)
+        deactivate V
+    else es el último artista del evento
+        C->>+E: quitarArtista(artista)
+        E--x-C: ArtistaException
+        C->>+V: mostrarError("El evento tiene que tener al menos un artista.")
+        deactivate V
     end
+    deactivate C
+    deactivate PA
 ```
 
 ## Paso a paso

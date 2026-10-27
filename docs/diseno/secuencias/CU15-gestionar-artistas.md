@@ -17,33 +17,47 @@ sequenceDiagram
     participant PE as Persistencia
     participant V as VentanaPrincipal
 
-    O->>P: escribe nombre y género y toca Alta
+    O->>+P: escribe nombre y género y toca Alta
     P->>P: actionPerformed(e)
-    P->>C: altaArtista(nombre, genero)
-    C->>S: getDatos()
-    S-->>C: datos
-    C->>D: generarId()
-    D-->>C: id
-    C->>A: new Artista(id, nombre, genero)
-    A->>A: validar(nombre, genero)
-    alt datos completos
-        A-->>C: artista
-        C->>D: agregarArtista(artista)
+    P->>+C: altaArtista(nombre, genero)
+    C->>+S: getDatos()
+    S-->>-C: datos
+    C->>+D: generarId()
+    D-->>-C: id
+    alt datos completos y nombre libre
+        C->>+A: new Artista(id, nombre, genero)
+        A->>A: validar(nombre, genero)
+        A-->>-C: artista
+        C->>+D: agregarArtista(artista)
         D->>D: verificarNombreLibre(nombre, null)
-        alt nombre libre
-            C->>S: guardar()
-            S->>PE: guardar(datos)
-            C->>V: mostrarMensaje("Se dio de alta a ...")
-            C->>V: mostrar(ARTISTAS)
-            Note over V: PantallaArtistas.actualizar() recarga la tabla
-        else ya existe un artista con ese nombre (3a)
-            D--xC: ArtistaException
-            C->>V: mostrarError(e.getMessage())
-        end
+        deactivate D
+        C->>+S: guardar()
+        S->>+PE: guardar(datos)
+        deactivate PE
+        deactivate S
+        C->>+V: mostrarMensaje("Se dio de alta a ...")
+        deactivate V
+        C->>+V: mostrar(ARTISTAS)
+        deactivate V
+        Note over V: PantallaArtistas.actualizar() recarga la tabla
     else nombre o género vacío (3a)
-        A--xC: DatosInvalidosException
-        C->>V: mostrarError(e.getMessage())
+        C->>+A: new Artista(id, nombre, genero)
+        A->>A: validar(nombre, genero)
+        A--x-C: DatosInvalidosException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
+    else ya existe un artista con ese nombre (3a)
+        C->>+A: new Artista(id, nombre, genero)
+        A->>A: validar(nombre, genero)
+        A-->>-C: artista
+        C->>+D: agregarArtista(artista)
+        D->>D: verificarNombreLibre(nombre, null)
+        D--x-C: ArtistaException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
     end
+    deactivate C
+    deactivate P
 ```
 
 ## Diagrama: modificar (2a) y baja (2b)
@@ -58,30 +72,44 @@ sequenceDiagram
     participant A as Artista
     participant V as VentanaPrincipal
 
-    O->>P: elige una fila de la tabla
+    O->>+P: elige una fila de la tabla
     P->>P: valueChanged(e): copia nombre y género a los campos
+    deactivate P
 
     alt toca Modificar (2a)
-        O->>P: corrige los campos y toca Modificar
-        P->>C: modificarArtista(artista, nombre, genero)
-        C->>D: modificarArtista(artista, nombre, genero)
+        O->>+P: corrige los campos y toca Modificar
+        P->>+C: modificarArtista(artista, nombre, genero)
+        C->>+D: modificarArtista(artista, nombre, genero)
         D->>D: verificarNombreLibre(nombre, artista)
-        D->>A: modificar(nombre, genero)
-        C->>S: guardar()
-        C->>V: mostrarMensaje("Se guardaron los cambios de ...")
-        C->>V: mostrar(ARTISTAS)
+        D->>+A: modificar(nombre, genero)
+        deactivate A
+        deactivate D
+        C->>+S: guardar()
+        deactivate S
+        C->>+V: mostrarMensaje("Se guardaron los cambios de ...")
+        deactivate V
+        C->>+V: mostrar(ARTISTAS)
+        deactivate V
+        deactivate C
+        deactivate P
     else toca Baja (2b)
-        O->>P: toca Baja
-        P->>C: bajaArtista(artista)
-        C->>V: confirmar("¿Dar de baja a ...?")
-        V-->>C: true
-        C->>D: eliminarArtista(artista)
+        O->>+P: toca Baja
+        P->>+C: bajaArtista(artista)
+        C->>+V: confirmar("¿Dar de baja a ...?")
+        V-->>-C: true
+        C->>+D: eliminarArtista(artista)
         loop por cada evento
             D->>D: ¿está ACTIVO o AGOTADO y tiene al artista?
         end
-        C->>S: guardar()
-        C->>V: mostrarMensaje("Se dio de baja a ...")
-        C->>V: mostrar(ARTISTAS)
+        deactivate D
+        C->>+S: guardar()
+        deactivate S
+        C->>+V: mostrarMensaje("Se dio de baja a ...")
+        deactivate V
+        C->>+V: mostrar(ARTISTAS)
+        deactivate V
+        deactivate C
+        deactivate P
     end
 ```
 

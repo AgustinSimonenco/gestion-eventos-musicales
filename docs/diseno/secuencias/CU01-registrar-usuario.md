@@ -18,37 +18,52 @@ sequenceDiagram
     participant D as DatosSistema
     participant V as VentanaPrincipal
 
-    U->>P: completa los datos, elige el tipo y toca Registrar
+    U->>+P: completa los datos, elige el tipo y toca Registrar
     P->>P: actionPerformed(e)
-    P->>C: registrar(nombre, email, contrasenia, tipo)
-    C->>C: crearUsuario(nombre, email, contrasenia, tipo)
-    alt tipo es TIPO_ORGANIZADOR
-        C->>Us: new Organizador(nombre, email, contrasenia)
-    else tipo es TIPO_CLIENTE
-        C->>Us: new Cliente(nombre, email, contrasenia)
-    end
-    Note over Us: el constructor de Usuario valida que no falte ningún dato y que el email tenga "@"
-    alt falta un dato o el email no tiene "@"
-        Us--xC: DatosInvalidosException
-        C->>V: mostrarError(e.getMessage())
+    P->>+C: registrar(nombre, email, contrasenia, tipo)
+    alt datos completos y email nuevo
+        C->>+C: crearUsuario(nombre, email, contrasenia, tipo)
+        C->>+Us: new Organizador(...) o new Cliente(...), según el tipo
+        Note over Us: el constructor de Usuario valida que no falte ningún dato y que el email tenga "@"
+        Us-->>-C: usuario
+        deactivate C
+        C->>+S: getDatos()
+        S-->>-C: datos
+        C->>+D: registrarUsuario(usuario)
+        D->>D: buscarUsuario(email): no existe
+        D->>D: usuarios.add(usuario)
+        deactivate D
+        C->>+S: guardar()
+        deactivate S
+        C->>+V: mostrarMensaje("Listo, ... Ya podés iniciar sesión.")
+        deactivate V
+        C->>+V: mostrar(LOGIN)
+        deactivate V
+        Note over V: la ventana llama a actualizar() del login, que deja los campos vacíos
+    else falta un dato o el email no tiene "@"
+        C->>+C: crearUsuario(nombre, email, contrasenia, tipo)
+        C->>+Us: new Organizador(...) o new Cliente(...), según el tipo
+        Us--x-C: DatosInvalidosException
+        deactivate C
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over P,V: se queda en PantallaRegistro
-    else datos completos
-        Us-->>C: usuario
-        C->>S: getDatos()
-        S-->>C: datos
-        C->>D: registrarUsuario(usuario)
-        alt ya hay un usuario con ese email (2a)
-            D--xC: UsuarioException
-            C->>V: mostrarError(e.getMessage())
-            Note over P,V: se queda en PantallaRegistro
-        else email nuevo
-            D->>D: usuarios.add(usuario)
-            C->>S: guardar()
-            C->>V: mostrarMensaje("Listo, ... Ya podés iniciar sesión.")
-            C->>V: mostrar(LOGIN)
-            Note over V: la ventana llama a actualizar() del login, que deja los campos vacíos
-        end
+    else ya hay un usuario con ese email (2a)
+        C->>+C: crearUsuario(nombre, email, contrasenia, tipo)
+        C->>+Us: new Organizador(...) o new Cliente(...), según el tipo
+        Us-->>-C: usuario
+        deactivate C
+        C->>+S: getDatos()
+        S-->>-C: datos
+        C->>+D: registrarUsuario(usuario)
+        D->>D: buscarUsuario(email): ya existe
+        D--x-C: UsuarioException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
+        Note over P,V: se queda en PantallaRegistro
     end
+    deactivate C
+    deactivate P
 ```
 
 ## Paso a paso

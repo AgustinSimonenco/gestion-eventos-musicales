@@ -16,34 +16,49 @@ sequenceDiagram
     participant Us as Usuario (Cliente u Organizador)
     participant V as VentanaPrincipal
 
-    U->>P: escribe email y contraseña y toca Ingresar
+    U->>+P: escribe email y contraseña y toca Ingresar
     P->>P: actionPerformed(e)
-    P->>C: iniciarSesion(email, contrasenia)
-    C->>S: getDatos()
-    S-->>C: datos
-    C->>D: autenticar(email, contrasenia)
-    loop por cada usuario, hasta encontrar el email
-        D->>Us: getEmail()
-        Us-->>D: email
-    end
-    D->>Us: validarContrasenia(contrasenia)
-    Us-->>D: true o false
+    P->>+C: iniciarSesion(email, contrasenia)
+    C->>+S: getDatos()
+    S-->>-C: datos
     alt email encontrado y contraseña correcta
-        D-->>C: usuario
-        C->>S: setUsuarioActual(usuario)
-        C->>Us: getTipo()
-        Us-->>C: ORGANIZADOR o CLIENTE
+        C->>+D: autenticar(email, contrasenia)
+        loop por cada usuario, hasta encontrar el email
+            D->>+Us: getEmail()
+            Us-->>-D: email
+        end
+        D->>+Us: validarContrasenia(contrasenia)
+        Us-->>-D: true
+        D-->>-C: usuario
+        C->>+S: setUsuarioActual(usuario)
+        deactivate S
+        C->>+Us: getTipo()
+        Us-->>-C: ORGANIZADOR o CLIENTE
         alt es organizador
-            C->>V: mostrar(MIS_EVENTOS)
+            C->>+V: mostrar(MIS_EVENTOS)
+            deactivate V
         else es cliente
-            C->>V: mostrar(EVENTOS_DISPONIBLES)
+            C->>+V: mostrar(EVENTOS_DISPONIBLES)
+            deactivate V
         end
         Note over V: antes de mostrarla, la ventana llama a actualizar() de esa pantalla
     else email inexistente o contraseña incorrecta (2a)
-        D--xC: UsuarioException
-        C->>V: mostrarError(e.getMessage())
+        C->>+D: autenticar(email, contrasenia)
+        loop por cada usuario, hasta encontrar el email
+            D->>+Us: getEmail()
+            Us-->>-D: email
+        end
+        opt si encontró el email
+            D->>+Us: validarContrasenia(contrasenia)
+            Us-->>-D: false
+        end
+        D--x-C: UsuarioException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over P,V: se queda en PantallaLogin
     end
+    deactivate C
+    deactivate P
 ```
 
 Si no se encuentra ningún usuario con ese email, `autenticar` no llama a `validarContrasenia`: lanza la excepción directamente.

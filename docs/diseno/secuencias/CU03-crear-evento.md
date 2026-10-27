@@ -17,34 +17,44 @@ sequenceDiagram
     participant PE as Persistencia
     participant V as VentanaPrincipal
 
-    O->>P: completa los datos, elige artistas y toca Guardar
+    O->>+P: completa los datos, elige artistas y toca Guardar
     P->>P: actionPerformed(e)
     Note right of P: modo crear, porque no hay evento seleccionado
-    P->>C: crearEvento(nombre, fecha, lugar, capacidad, precio, artistas)
+    P->>+C: crearEvento(nombre, fecha, lugar, capacidad, precio, artistas)
     C->>C: convertirFecha(fecha)
     C->>C: convertirEntero(capacidad, "La capacidad")
     C->>C: convertirDecimal(precio, "El precio")
-    C->>S: getDatos()
-    S-->>C: datos
-    C->>S: getOrganizador()
-    S-->>C: organizador
-    C->>D: generarId()
-    D-->>C: id
-    C->>E: new Evento(id, nombre, fecha, lugar, capacidad, precio, organizador, artistas)
-    E->>E: valida los datos
+    C->>+S: getDatos()
+    S-->>-C: datos
+    C->>+S: getOrganizador()
+    S-->>-C: organizador
+    C->>+D: generarId()
+    D-->>-C: id
     alt datos válidos
-        E-->>C: evento en estado ACTIVO
-        C->>D: agregarEvento(evento)
-        C->>S: guardar()
-        S->>PE: guardar(datos)
-        C->>V: mostrarMensaje("Evento creado")
-        C->>V: mostrar(MIS_EVENTOS)
+        C->>+E: new Evento(id, nombre, fecha, lugar, capacidad, precio, organizador, artistas)
+        E->>E: valida los datos
+        E-->>-C: evento en estado ACTIVO
+        C->>+D: agregarEvento(evento)
+        deactivate D
+        C->>+S: guardar()
+        S->>+PE: guardar(datos)
+        deactivate PE
+        deactivate S
+        C->>+V: mostrarMensaje("Evento creado")
+        deactivate V
+        C->>+V: mostrar(MIS_EVENTOS)
+        deactivate V
         Note over V: PantallaMisEventos.actualizar() pide getMisEventos() y el evento nuevo aparece en la tabla
     else dato inválido o ningún artista elegido (3a)
-        E--xC: DatosInvalidosException
-        C->>V: mostrarError(e.getMessage())
+        C->>+E: new Evento(id, nombre, fecha, lugar, capacidad, precio, organizador, artistas)
+        E->>E: valida los datos
+        E--x-C: DatosInvalidosException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over P,V: se queda en el formulario con lo que había escrito
     end
+    deactivate C
+    deactivate P
 ```
 
 Si un texto no se puede convertir (por ejemplo, la capacidad dice "mil"), `convertirEntero` lanza `DatosInvalidosException` ahí mismo, antes de crear nada, y se va directo al mismo `catch`.

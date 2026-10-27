@@ -17,42 +17,62 @@ sequenceDiagram
     participant PE as Persistencia
     participant V as VentanaPrincipal
 
-    O->>PM: elige un evento de la tabla y toca Modificar
+    O->>+PM: elige un evento de la tabla y toca Modificar
     PM->>PM: actionPerformed(e) y getEventoElegido()
-    PM->>C: elegirParaModificar(evento)
-    C->>S: getOrganizador()
-    S-->>C: organizador
-    C->>E: verificarOrganizador(organizador)
-    C->>E: verificarVigente("modificar")
+    PM->>+C: elegirParaModificar(evento)
+    C->>+S: getOrganizador()
+    S-->>-C: organizador
     alt el evento se puede modificar
+        C->>+E: verificarOrganizador(organizador)
+        deactivate E
+        C->>+E: verificarVigente("modificar")
+        deactivate E
         C->>C: eventoSeleccionado = evento
-        C->>V: mostrar(FORMULARIO_EVENTO)
-        V->>PF: actualizar()
-        PF->>C: getEventoSeleccionado()
-        C-->>PF: evento
+        C->>+V: mostrar(FORMULARIO_EVENTO)
+        V->>+PF: actualizar()
+        PF->>+C: getEventoSeleccionado()
+        C-->>-PF: evento
         Note over PF: modo modificar: llena los campos y oculta la lista de artistas
+        deactivate PF
+        deactivate V
     else cancelado o finalizado
-        E--xC: EventoException
-        C->>V: mostrarError(e.getMessage())
+        C->>+E: verificarOrganizador(organizador)
+        deactivate E
+        C->>+E: verificarVigente("modificar")
+        E--x-C: EventoException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over PM,V: se queda en Mis eventos
     end
+    deactivate C
+    deactivate PM
 
-    O->>PF: corrige los datos y toca Guardar
-    PF->>C: modificarEvento(nombre, fecha, lugar, capacidad, precio)
+    O->>+PF: corrige los datos y toca Guardar
+    PF->>+C: modificarEvento(nombre, fecha, lugar, capacidad, precio)
     C->>C: convertirFecha / convertirEntero / convertirDecimal
-    C->>E: modificar(nombre, fecha, lugar, capacidad, precio)
-    E->>E: verificarVigente, validarDatos, capacidad >= vendidas
     alt datos válidos
+        C->>+E: modificar(nombre, fecha, lugar, capacidad, precio)
+        E->>E: verificarVigente, validarDatos, capacidad >= vendidas
         E->>E: guardarDatos y actualizarCupo
-        C->>S: guardar()
-        S->>PE: guardar(datos)
-        C->>V: mostrarMensaje("Se guardaron los cambios del evento.")
-        C->>V: mostrar(MIS_EVENTOS)
+        deactivate E
+        C->>+S: guardar()
+        S->>+PE: guardar(datos)
+        deactivate PE
+        deactivate S
+        C->>+V: mostrarMensaje("Se guardaron los cambios del evento.")
+        deactivate V
+        C->>+V: mostrar(MIS_EVENTOS)
+        deactivate V
     else dato inválido o capacidad menor a lo vendido
-        E--xC: DatosInvalidosException / EventoException
-        C->>V: mostrarError(e.getMessage())
+        C->>+E: modificar(nombre, fecha, lugar, capacidad, precio)
+        E->>E: verificarVigente, validarDatos, capacidad >= vendidas
+        E--x-C: DatosInvalidosException / EventoException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over PF,V: se queda en el formulario con lo escrito
     end
+    deactivate C
+    deactivate PF
 ```
 
 ## Paso a paso

@@ -17,44 +17,58 @@ sequenceDiagram
     participant I as ItemCarrito
     participant V as VentanaPrincipal
 
-    U->>P: elige un evento, escribe la cantidad y toca Agregar al carrito
+    U->>+P: elige un evento, escribe la cantidad y toca Agregar al carrito
     P->>P: actionPerformed(e)
     P->>P: evento = eventosMostrados.get(fila elegida)
-    P->>C: agregarAlCarrito(evento, textoCantidad)
+    P->>+C: agregarAlCarrito(evento, textoCantidad)
     C->>C: convertirEntero(textoCantidad, "La cantidad")
-    C->>S: getCliente()
-    S-->>C: cliente
+    C->>+S: getCliente()
+    S-->>-C: cliente
     Note right of C: cliente.getCarrito() devuelve su carrito
-    C->>Ca: agregarItem(evento, cantidad)
-    alt cantidad 0 o negativa (2a)
-        Ca--xC: DatosInvalidosException
-        C->>V: mostrarError(e.getMessage())
-    else cantidad válida
+    alt hay lugar
+        C->>+Ca: agregarItem(evento, cantidad)
         Ca->>Ca: buscarItem(evento)
         Note right of Ca: si el evento ya está en el carrito, se verifica la suma de las dos cantidades
-        Ca->>E: verificarDisponibilidad(cantidadTotal)
+        Ca->>+E: verificarDisponibilidad(cantidadTotal)
         Note over Ca,E: este es el include de CU08
-        alt evento cancelado o ya realizado
-            E--xCa: EventoException
-            Ca--xC: la excepción sigue hasta el controlador
-            C->>V: mostrarError(e.getMessage())
-        else no alcanzan las entradas (3a)
-            E--xCa: SinDisponibilidadException con las que quedan
-            Ca--xC: la excepción sigue hasta el controlador
-            C->>V: mostrarError(e.getMessage())
-        else hay lugar
-            E-->>Ca: ok
-            alt el evento ya estaba en el carrito
-                Ca->>I: setCantidad(cantidadTotal)
-            else es un evento nuevo en el carrito
-                Ca->>I: new ItemCarrito(evento, cantidad)
-            end
-            Ca-->>C: ok
-            C->>S: guardar()
-            C->>V: mostrar(CARRITO)
-            Note over V: PantallaCarrito.actualizar() muestra cada ítem con getSubtotal() y el total con getTotal()
+        E-->>-Ca: ok
+        alt el evento ya estaba en el carrito
+            Ca->>+I: setCantidad(cantidadTotal)
+            deactivate I
+        else es un evento nuevo en el carrito
+            Ca->>+I: new ItemCarrito(evento, cantidad)
+            deactivate I
         end
+        Ca-->>-C: ok
+        C->>+S: guardar()
+        deactivate S
+        C->>+V: mostrar(CARRITO)
+        deactivate V
+        Note over V: PantallaCarrito.actualizar() muestra cada ítem con getSubtotal() y el total con getTotal()
+    else cantidad 0 o negativa (2a)
+        C->>+Ca: agregarItem(evento, cantidad)
+        Ca--x-C: DatosInvalidosException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
+    else evento cancelado o ya realizado
+        C->>+Ca: agregarItem(evento, cantidad)
+        Ca->>Ca: buscarItem(evento)
+        Ca->>+E: verificarDisponibilidad(cantidadTotal)
+        E--x-Ca: EventoException
+        Ca--x-C: la excepción sigue hasta el controlador
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
+    else no alcanzan las entradas (3a)
+        C->>+Ca: agregarItem(evento, cantidad)
+        Ca->>Ca: buscarItem(evento)
+        Ca->>+E: verificarDisponibilidad(cantidadTotal)
+        E--x-Ca: SinDisponibilidadException con las que quedan
+        Ca--x-C: la excepción sigue hasta el controlador
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
     end
+    deactivate C
+    deactivate P
 ```
 
 Cuando hay un error, el cliente **se queda en `PantallaEventosDisponibles`** para corregir la cantidad (ver [p9](../p9-diagrama-de-navegacion.md#3-cliente)).

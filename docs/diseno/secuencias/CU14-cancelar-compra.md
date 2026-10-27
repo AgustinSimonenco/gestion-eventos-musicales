@@ -17,34 +17,44 @@ sequenceDiagram
     participant S as Sesion
     participant V as VentanaPrincipal
 
-    U->>P: elige una compra y toca Cancelar compra
+    U->>+P: elige una compra y toca Cancelar compra
     P->>P: compra = comprasMostradas.get(fila elegida)
-    P->>C: cancelarCompra(compra)
+    P->>+C: cancelarCompra(compra)
     C->>C: hoy = LocalDate.now()
-    C->>Co: verificarCancelable(hoy)
-    alt ya estaba cancelada (2b) o el evento ya se realizó (2a)
-        Co--xC: CompraException
-        C->>V: mostrarError(e.getMessage())
-    else se puede cancelar
-        Co-->>C: ok
-        C->>V: confirmar("¿Cancelar la compra? Se reintegran $ total")
-        V-->>C: true o false
+    alt se puede cancelar
+        C->>+Co: verificarCancelable(hoy)
+        Co-->>-C: ok
+        C->>+V: confirmar("¿Cancelar la compra? Se reintegran $ total")
+        V-->>-C: true o false
         alt el cliente confirma
-            C->>Co: cancelar(hoy)
+            C->>+Co: cancelar(hoy)
             Co->>Co: verificarCancelable(hoy)
             loop por cada Entrada de la compra
-                Co->>En: anular()
-                Co->>E: liberarLugares(1)
+                Co->>+En: anular()
+                deactivate En
+                Co->>+E: liberarLugares(1)
+                deactivate E
             end
             Note right of Co: la compra pasa a CANCELADA
-            C->>S: guardar()
-            C->>V: mostrarMensaje("Compra cancelada. Se reintegran $ total")
-            C->>V: mostrar(HISTORIAL)
+            deactivate Co
+            C->>+S: guardar()
+            deactivate S
+            C->>+V: mostrarMensaje("Compra cancelada. Se reintegran $ total")
+            deactivate V
+            C->>+V: mostrar(HISTORIAL)
+            deactivate V
             Note over V: PantallaHistorial.actualizar() pide getHistorial() y la compra aparece como CANCELADA
         else no confirma (4a)
             Note over P,V: no cambia nada
         end
+    else ya estaba cancelada (2b) o el evento ya se realizó (2a)
+        C->>+Co: verificarCancelable(hoy)
+        Co--x-C: CompraException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
     end
+    deactivate C
+    deactivate P
 ```
 
 ## Paso a paso
