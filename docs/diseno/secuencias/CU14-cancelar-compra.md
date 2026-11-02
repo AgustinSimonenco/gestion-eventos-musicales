@@ -10,12 +10,12 @@ Desde `PantallaHistorial`, el cliente elige una compra y toca *Cancelar compra*.
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaHistorial
+    participant V as VentanaPrincipal
     participant C as ControladorCompras
+    participant S as Sesion
     participant Co as Compra
     participant En as Entrada
     participant E as Evento
-    participant S as Sesion
-    participant V as VentanaPrincipal
 
     U->>+P: elige una compra y toca Cancelar compra
     P->>P: compra = comprasMostradas.get(fila elegida)

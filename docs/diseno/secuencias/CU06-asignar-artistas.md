@@ -11,11 +11,11 @@ sequenceDiagram
     actor O as Persona (organizador)
     participant PM as PantallaMisEventos
     participant PA as PantallaAsignarArtistas
+    participant V as VentanaPrincipal
     participant C as ControladorEventos
     participant S as Sesion
     participant E as Evento
     participant PE as Persistencia
-    participant V as VentanaPrincipal
 
     O->>+PM: elige un evento y toca Artistas del evento
     PM->>PM: actionPerformed(e) y getEventoElegido()

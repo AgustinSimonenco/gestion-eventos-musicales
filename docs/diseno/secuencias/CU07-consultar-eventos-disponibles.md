@@ -9,8 +9,8 @@ El cliente inicia sesión y ve la tabla de eventos a los que todavía puede comp
 ```mermaid
 sequenceDiagram
     actor U as Persona (cliente)
-    participant V as VentanaPrincipal
     participant P as PantallaEventosDisponibles
+    participant V as VentanaPrincipal
     participant C as ControladorCarrito
     participant S as Sesion
     participant D as DatosSistema

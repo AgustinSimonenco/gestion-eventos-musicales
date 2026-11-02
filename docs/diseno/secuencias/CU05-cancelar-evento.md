@@ -10,11 +10,11 @@ El organizador elige un evento en "Mis eventos", toca *Cancelar evento* y confir
 sequenceDiagram
     actor O as Persona (organizador)
     participant P as PantallaMisEventos
+    participant V as VentanaPrincipal
     participant C as ControladorEventos
     participant S as Sesion
     participant E as Evento
     participant PE as Persistencia
-    participant V as VentanaPrincipal
 
     O->>+P: elige un evento y toca Cancelar evento
     P->>P: actionPerformed(e) y getEventoElegido()

@@ -10,9 +10,9 @@ El cliente elige un evento en la tabla y toca *Ver disponibilidad*. Ve un diálo
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaEventosDisponibles
+    participant V as VentanaPrincipal
     participant C as ControladorCarrito
     participant E as Evento
-    participant V as VentanaPrincipal
 
     U->>+P: elige un evento y toca Ver disponibilidad
     P->>P: actionPerformed(e) y getEventoElegido()

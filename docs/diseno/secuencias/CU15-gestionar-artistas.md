@@ -10,12 +10,12 @@ El organizador entra a *Gestionar artistas*, ve el catálogo en una tabla y pued
 sequenceDiagram
     actor O as Persona (organizador)
     participant P as PantallaArtistas
+    participant V as VentanaPrincipal
     participant C as ControladorArtistas
     participant S as Sesion
     participant D as DatosSistema
     participant A as Artista
     participant PE as Persistencia
-    participant V as VentanaPrincipal
 
     O->>+P: escribe nombre y género y toca Alta
     P->>P: actionPerformed(e)
@@ -66,11 +66,11 @@ sequenceDiagram
 sequenceDiagram
     actor O as Persona (organizador)
     participant P as PantallaArtistas
+    participant V as VentanaPrincipal
     participant C as ControladorArtistas
     participant S as Sesion
     participant D as DatosSistema
     participant A as Artista
-    participant V as VentanaPrincipal
 
     O->>+P: elige una fila de la tabla
     P->>P: valueChanged(e): copia nombre y género a los campos

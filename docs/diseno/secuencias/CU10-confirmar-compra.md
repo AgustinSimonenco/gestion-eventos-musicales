@@ -16,12 +16,12 @@ Entre la parte 1 y la 2, el `ControladorCompras` recuerda la compra en su atribu
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaCarrito
+    participant V as VentanaPrincipal
     participant C as ControladorCompras
     participant S as Sesion
     participant Ca as Carrito
     participant E as Evento
     participant Co as Compra
-    participant V as VentanaPrincipal
 
     U->>+P: toca Confirmar compra
     P->>+C: iniciarCompra()
@@ -73,14 +73,14 @@ sequenceDiagram
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaPago
+    participant V as VentanaPrincipal
     participant C as ControladorCompras
+    participant S as Sesion
     participant PT as PagoTarjeta (un MedioDePago)
     participant Co as Compra
     participant E as Evento
     participant Cl as Cliente
     participant Cb as Comprobante
-    participant S as Sesion
-    participant V as VentanaPrincipal
 
     U->>+P: elige Tarjeta, completa los datos y toca Pagar
     P->>+C: pagarConTarjeta(numero, titular, mes, anio, codigo, cuotas)
@@ -163,8 +163,8 @@ sequenceDiagram
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaPago
-    participant C as ControladorCompras
     participant V as VentanaPrincipal
+    participant C as ControladorCompras
 
     U->>+P: toca Cancelar pago
     P->>+C: cancelarPago()

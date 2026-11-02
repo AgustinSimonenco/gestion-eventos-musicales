@@ -10,12 +10,12 @@ El organizador completa el formulario (nombre, fecha, lugar, capacidad, precio),
 sequenceDiagram
     actor O as Persona (organizador)
     participant P as PantallaFormularioEvento
+    participant V as VentanaPrincipal
     participant C as ControladorEventos
     participant S as Sesion
     participant D as DatosSistema
     participant E as Evento
     participant PE as Persistencia
-    participant V as VentanaPrincipal
 
     O->>+P: completa los datos, elige artistas y toca Guardar
     P->>P: actionPerformed(e)

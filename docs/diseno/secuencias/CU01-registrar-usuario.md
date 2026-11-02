@@ -12,11 +12,11 @@ La persona completa nombre, email, contraseña y tipo (cliente u organizador) en
 sequenceDiagram
     actor U as Persona
     participant P as PantallaRegistro
-    participant C as ControladorUsuarios
-    participant Us as Cliente u Organizador
-    participant S as Sesion
-    participant D as DatosSistema
     participant V as VentanaPrincipal
+    participant C as ControladorUsuarios
+    participant S as Sesion
+    participant Us as Cliente u Organizador
+    participant D as DatosSistema
 
     U->>+P: completa los datos, elige el tipo y toca Registrar
     P->>P: actionPerformed(e)

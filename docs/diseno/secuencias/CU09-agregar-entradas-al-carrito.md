@@ -10,12 +10,12 @@ El cliente elige un evento en la tabla de `PantallaEventosDisponibles`, escribe 
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaEventosDisponibles
+    participant V as VentanaPrincipal
     participant C as ControladorCarrito
     participant S as Sesion
     participant Ca as Carrito
     participant E as Evento
     participant I as ItemCarrito
-    participant V as VentanaPrincipal
 
     U->>+P: elige un evento, escribe la cantidad y toca Agregar al carrito
     P->>P: actionPerformed(e)

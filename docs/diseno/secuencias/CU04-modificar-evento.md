@@ -11,11 +11,11 @@ sequenceDiagram
     actor O as Persona (organizador)
     participant PM as PantallaMisEventos
     participant PF as PantallaFormularioEvento
+    participant V as VentanaPrincipal
     participant C as ControladorEventos
     participant S as Sesion
     participant E as Evento
     participant PE as Persistencia
-    participant V as VentanaPrincipal
 
     O->>+PM: elige un evento de la tabla y toca Modificar
     PM->>PM: actionPerformed(e) y getEventoElegido()

@@ -18,6 +18,14 @@ Elegidos el 17/10 (D-005, aprobado). Entre los cinco aparecen todos los patrones
 
 ## Cómo leer los diagramas
 
+- **Orden de los participantes, de izquierda a derecha, según la capa MVC** (pedido del profesor):
+  1. la persona (actor);
+  2. la **vista**: las pantallas y `VentanaPrincipal`;
+  3. el **controlador**: el controlador del caso de uso y `Sesion` (que está en el paquete `controlador`);
+  4. el **modelo**: `DatosSistema`, `Evento`, `Carrito`, `Compra`, etc.;
+  5. al final, `Persistencia`, la capa que escribe el archivo (la llama `Sesion.guardar()`). No es parte del modelo, pero está "debajo" de él, por eso va a la derecha de todo.
+
+  Así las flechas van casi siempre de izquierda a derecha (la pantalla le pide al controlador y el controlador al modelo), y las que vuelven hacia la izquierda son respuestas o excepciones.
 - **Flecha llena (`->>`):** un objeto llama un método de otro. Si la flecha vuelve al mismo objeto, es un método propio (por ejemplo `convertirEntero`).
 - **Flecha punteada (`-->>`):** lo que devuelve el método.
 - **Flecha punteada con cruz (`--x`):** el método **lanza una excepción** en lugar de devolver algo.

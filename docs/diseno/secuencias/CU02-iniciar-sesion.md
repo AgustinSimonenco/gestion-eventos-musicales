@@ -10,11 +10,11 @@ El usuario escribe email y contraseña en `PantallaLogin` y toca *Ingresar*. Si 
 sequenceDiagram
     actor U as Persona
     participant P as PantallaLogin
+    participant V as VentanaPrincipal
     participant C as ControladorUsuarios
     participant S as Sesion
     participant D as DatosSistema
     participant Us as Usuario (Cliente u Organizador)
-    participant V as VentanaPrincipal
 
     U->>+P: escribe email y contraseña y toca Ingresar
     P->>P: actionPerformed(e)
