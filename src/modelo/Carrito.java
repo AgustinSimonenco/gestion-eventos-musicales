@@ -37,20 +37,19 @@ public class Carrito implements Serializable {
      */
     public void agregarItem(Evento evento, int cantidad) throws DatosInvalidosException, EventoException {
         validarCantidad(cantidad);
-        // Primero se controla lo nuevo solo: así un número enorme se rechaza
-        // acá y no se desborda el int al sumarlo con lo que ya había
-        evento.verificarDisponibilidad(cantidad);
         ItemCarrito item = buscarItem(evento);
-        int total = cantidad;
+        // Se suma en un long para que dos cantidades enormes no desborden el int
+        long total = cantidad;
         if (item != null) {
             total = total + item.getCantidad();
         }
         // CU09 incluye CU08: se verifica la cantidad total, no solo lo nuevo
         evento.verificarDisponibilidad(total);
+        // Si llegó acá, el total no supera la capacidad: entra en un int
         if (item == null) {
-            items.add(new ItemCarrito(evento, total));
+            items.add(new ItemCarrito(evento, (int) total));
         } else {
-            item.setCantidad(total);
+            item.setCantidad((int) total);
         }
     }
 

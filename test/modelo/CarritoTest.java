@@ -68,6 +68,19 @@ public class CarritoTest {
     }
 
     @Test
+    public void dosCantidadesEnormesNoDesbordanLaSuma() throws SistemaException {
+        Carrito carrito = new Carrito();
+        Evento evento = Fabrica.evento(Integer.MAX_VALUE, 100);
+        carrito.agregarItem(evento, 2000000000);
+        try {
+            carrito.agregarItem(evento, 2000000000);
+            fail("Tenía que rechazar la suma");
+        } catch (SinDisponibilidadException e) {
+            assertEquals(2000000000, carrito.getItems().get(0).getCantidad());
+        }
+    }
+
+    @Test
     public void laCantidadTieneQueSerMayorACero() throws SistemaException {
         Carrito carrito = new Carrito();
         try {

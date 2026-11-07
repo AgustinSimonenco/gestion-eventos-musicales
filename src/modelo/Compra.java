@@ -117,10 +117,13 @@ public class Compra implements Serializable {
             throw new CompraException("Solo se puede cancelar una compra confirmada.");
         }
         for (Entrada entrada : entradas) {
-            // RF15: "antes de la fecha del evento", así que el mismo día ya no se puede
-            if (!entrada.getEvento().getFecha().isAfter(hoy)) {
+            Evento evento = entrada.getEvento();
+            // RF15: "antes de la fecha del evento", así que el mismo día ya no se
+            // puede. Un evento cancelado no se hizo: ese reintegro nunca vence (D-003)
+            boolean cancelado = evento.getEstado() == EstadoEvento.CANCELADO;
+            if (!cancelado && !evento.getFecha().isAfter(hoy)) {
                 throw new CompraException("No se puede cancelar: el evento "
-                        + entrada.getEvento().getNombre() + " es hoy o ya se realizó.");
+                        + evento.getNombre() + " es hoy o ya se realizó.");
             }
         }
     }

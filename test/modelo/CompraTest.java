@@ -130,4 +130,13 @@ public class CompraTest {
         assertEquals(EstadoCompra.CANCELADA, compra.getEstado());
         assertEquals(EstadoEvento.CANCELADO, evento.getEstado());
     }
+
+    @Test
+    public void elReintegroDeUnEventoCanceladoNoVence() throws SistemaException {
+        Evento evento = Fabrica.evento(10, 100);
+        Compra compra = Fabrica.compraConfirmada(Fabrica.cliente(), evento, 1);
+        evento.cancelar();
+        compra.cancelar(Fabrica.FECHA_EVENTO.plusDays(1));
+        assertEquals(EstadoCompra.CANCELADA, compra.getEstado());
+    }
 }

@@ -41,7 +41,8 @@ public class Comprobante implements Serializable {
         StringBuilder texto = new StringBuilder();
         texto.append("Comprobante ").append(numero).append("\n");
         texto.append("Emitido: ").append(fechaEmision.format(formatoFechaHora)).append("\n");
-        texto.append("Compra N.º ").append(compra.getNumero()).append("\n");
+        texto.append("Compra N.º ").append(compra.getNumero()).append(" del ")
+                .append(compra.getFechaHora().format(formatoFechaHora)).append("\n");
         texto.append("Cliente: ").append(compra.getCliente().getNombre())
                 .append(" (").append(compra.getCliente().getEmail()).append(")\n\n");
         agregarDetalle(texto);

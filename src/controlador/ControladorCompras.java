@@ -157,10 +157,11 @@ public class ControladorCompras extends Controlador {
                 return;
             }
             compra.cancelar(hoy);
+            // Se recarga antes de guardar, para que la tabla diga CANCELADA
+            // aunque falle el guardado: la compra ya cambió en memoria
+            ventana.mostrar(VentanaPrincipal.HISTORIAL);
             sesion.guardar();
             ventana.mostrarMensaje("Compra cancelada. Se reintegran " + monto + ".");
-            // Se vuelve a mostrar para que la tabla diga CANCELADA
-            ventana.mostrar(VentanaPrincipal.HISTORIAL);
         } catch (SistemaException e) {
             ventana.mostrarError(e.getMessage());
         }
@@ -182,8 +183,13 @@ public class ControladorCompras extends Controlador {
         // Se sale de la pantalla de pago antes de guardar: la compra ya
         // terminó, y si falla el guardado no se puede volver a pagarla
         ventana.mostrar(VentanaPrincipal.EVENTOS_DISPONIBLES);
-        sesion.guardar();
-        ventana.mostrarTexto("Comprobante", comprobante.generarTexto());
+        try {
+            sesion.guardar();
+        } finally {
+            // "finally" se ejecuta aunque falle el guardado: la compra ya se
+            // pagó, así que el cliente siempre ve su comprobante
+            ventana.mostrarTexto("Comprobante", comprobante.generarTexto());
+        }
     }
 
     // Arma el texto que se muestra antes de pagar (CU10, paso 2)

@@ -118,7 +118,7 @@ public class Evento implements Serializable {
      * @throws EventoException            si el evento está cancelado o finalizado
      * @throws SinDisponibilidadException si no quedan suficientes entradas
      */
-    public void verificarDisponibilidad(int cantidad) throws EventoException {
+    public void verificarDisponibilidad(long cantidad) throws EventoException {
         verificarALaVenta();
         int disponibles = getEntradasDisponibles();
         if (cantidad > disponibles) {
