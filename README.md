@@ -4,7 +4,7 @@ Trabajo Práctico Integrador — **Algoritmos I** (2026, 2.º cuatrimestre)
 
 Aplicación de escritorio para administrar recitales: gestión de eventos, asignación de artistas, venta de entradas y registro de pagos. Centraliza la administración de eventos y la interacción con los usuarios.
 
-> 🚧 Etapa actual: implementación. El 20/10 se armó el esqueleto (E4): modelo completo, persistencia, excepciones y ventana vacía. El 21/10 (E5) se agregaron el registro, el inicio de sesión y la pantalla de inicio de cada rol. El 23/10 (E6 y E7) se agregaron la gestión de artistas y crear, modificar y cancelar eventos. El 24/10 (E8) se agregaron asignar artistas a un evento y, para el cliente, la tabla de eventos disponibles y la consulta de disponibilidad.
+> ✅ Proyecto terminado: los 15 casos de uso funcionan desde la interfaz. Para verlo funcionando, seguí el [manual de uso](docs/manual-de-uso.md), que incluye usuarios de ejemplo y un guion de demo.
 
 ## Actores
 
@@ -24,6 +24,13 @@ Aplicación de escritorio para administrar recitales: gestión de eventos, asign
 | p3 | [Requerimientos funcionales](docs/analisis/p3-requerimientos-funcionales.md) |
 | p4 | [Requerimientos no funcionales](docs/analisis/p4-requerimientos-no-funcionales.md) |
 | — | [Casos de uso](docs/analisis/casos-de-uso.md) |
+
+### Uso y defensa
+
+| Documento | Para qué sirve |
+|---|---|
+| [Manual de uso](docs/manual-de-uso.md) | Cómo usar el programa, usuarios de ejemplo y guion de demo |
+| [Guía de defensa](docs/guia-de-defensa.md) | Trazabilidad de cada caso de uso, patrones y preguntas |
 
 ### Diseño (Seguimiento II)
 
@@ -60,8 +67,12 @@ Hace falta un JDK (8 o más nuevo). El código se compila siempre como Java 8 (`
 | Windows | `compilar.bat` | `ejecutar.bat` |
 | Linux / Mac / Git Bash | `./compilar.sh` | `./ejecutar.sh` |
 
+- **Para la demo:** `ejecutar-demo.bat` o `./ejecutar-demo.sh` borra `datos.dat` y abre el programa con los datos de ejemplo. Usuarios: `ana@demo.com` (organizadora), `juan@demo.com` y `maria@demo.com` (clientes), contraseña `1234`.
+- **Tests:** `probar.bat` o `./probar.sh` ejecuta los 62 tests JUnit.
+- **Javadoc:** `generar-javadoc.bat` o `./generar-javadoc.sh` lo genera en `javadoc/`.
+
 - La salida compilada va a `bin/` (no se sube a git).
-- Los datos se guardan en `datos.dat`, en la carpeta desde donde se ejecuta (tampoco se sube a git). Para empezar de cero, se borra ese archivo.
+- Los datos se guardan en `datos.dat`, en la carpeta desde donde se ejecuta (tampoco se sube a git). Si se borra ese archivo, el programa vuelve a arrancar con los datos de ejemplo.
 - En VS Code o Antigravity, con el Extension Pack for Java, `.vscode/settings.json` ya configura `src/`, `test/`, `bin/` y el jar de JUnit de `lib/`.
 
-Estructura del código (`src/`): `modelo`, `vista`, `controlador`, `persistencia`, `excepciones` y `Main.java`.
+Estructura del código (`src/`): `modelo`, `vista`, `controlador`, `persistencia`, `excepciones` y `Main.java`. Los tests están en `test/`.

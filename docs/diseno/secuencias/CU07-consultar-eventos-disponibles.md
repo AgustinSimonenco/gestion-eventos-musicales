@@ -27,10 +27,10 @@ sequenceDiagram
         D->>+E: actualizarEstado(hoy)
         Note right of E: si la fecha ya pasó, queda FINALIZADO
         deactivate E
-        D->>+E: estaActivo()
+        D->>+E: estaVigente()
         E-->>-D: true o false
     end
-    D-->>-C: eventos ACTIVO
+    D-->>-C: eventos ACTIVO o AGOTADO
     C-->>-P: eventos
     P->>P: eventosMostrados = eventos
     loop por cada evento
@@ -51,8 +51,8 @@ sequenceDiagram
 
 1. Cada vez que la ventana muestra la pantalla (después del login o al volver del carrito o del historial), llama a **`actualizar()`**.
 2. La pantalla le pide la lista a **`ControladorCarrito.getEventosDisponibles()`**, que se la pide a **`DatosSistema`** con la fecha de hoy.
-3. **`DatosSistema.getEventosDisponibles`** recorre todos los eventos. A cada uno le pide que actualice su estado (uno cuya fecha ya pasó se vuelve `FINALIZADO`) y se queda solo con los que están `ACTIVO`. Los `AGOTADO`, `CANCELADO` y `FINALIZADO` no se muestran.
-4. La pantalla guarda la lista en `eventosMostrados` (en el mismo orden que las filas) y arma una fila por evento. La columna "Artistas" usa `Evento.getNombresArtistas()`.
+3. **`DatosSistema.getEventosDisponibles`** recorre todos los eventos. A cada uno le pide que actualice su estado (uno cuya fecha ya pasó se vuelve `FINALIZADO`) y se queda con los vigentes: `ACTIVO` y `AGOTADO` (D-008). Los `CANCELADO` y `FINALIZADO` no se muestran.
+4. La pantalla guarda la lista en `eventosMostrados` (en el mismo orden que las filas) y arma una fila por evento. La columna "Artistas" usa `Evento.getNombresArtistas()`. Si a un evento no le quedan entradas, la columna "Disponibles" dice "AGOTADO".
 5. **2a:** si la lista está vacía, lo dice en la misma pantalla con una etiqueta.
 
 ## Elementos, patrones y decisiones
@@ -60,7 +60,7 @@ sequenceDiagram
 | Elemento | Qué muestra |
 |---|---|
 | **Polimorfismo** | `VentanaPrincipal.mostrar` llama a `actualizar()` sin saber qué pantalla es. |
-| **GRASP Experto** | `DatosSistema` tiene la lista de todos los eventos y los filtra; cada `Evento` sabe si está activo y arma los nombres de sus artistas. |
+| **GRASP Experto** | `DatosSistema` tiene la lista de todos los eventos y los filtra; cada `Evento` sabe si está vigente y arma los nombres de sus artistas. |
 | **MVC** | La pantalla solo lee datos para mostrarlos; no decide qué evento está disponible. |
 
 - **El aviso de "no hay eventos" va en la pantalla y no en un diálogo:** un diálogo aparecería cada vez que el cliente entra o vuelve a la pantalla.

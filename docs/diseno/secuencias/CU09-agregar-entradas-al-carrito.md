@@ -79,6 +79,7 @@ Cuando hay un error, el cliente **se queda en `PantallaEventosDisponibles`** par
 2. **`ControladorCarrito.agregarAlCarrito`** convierte la cantidad a número, busca el carrito del cliente que inició sesión y llama a `Carrito.agregarItem`.
 3. **`Carrito.agregarItem`**:
    - Si la cantidad es 0 o negativa, lanza `DatosInvalidosException` (2a).
+   - Verifica la cantidad nueva sola con `Evento.verificarDisponibilidad`. Así un número enorme se rechaza antes de sumarlo y el `int` no se desborda.
    - Con `buscarItem(evento)` se fija si ese evento ya está en el carrito. Si está, la cantidad a verificar es la que ya tenía **más** la nueva. Así no se puede esquivar el límite agregando de a poco.
    - Le pide al evento `verificarDisponibilidad(cantidadTotal)`. **Esto es CU08 incluido en CU09.**
 4. **`Evento.verificarDisponibilidad`** revisa, en este orden:

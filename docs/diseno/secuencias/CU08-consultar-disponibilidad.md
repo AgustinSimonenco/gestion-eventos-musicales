@@ -60,4 +60,4 @@ sequenceDiagram
 | **Reutilización** | `verificarALaVenta` es el mismo control que usa `verificarDisponibilidad` cuando se agregan entradas al carrito (CU09 incluye CU08). |
 
 - **No se guarda nada:** `actualizarEstado` puede cambiar el estado en memoria, pero se vuelve a calcular cada vez que se listan los eventos, así que no hace falta guardar.
-- **El caso 3a (agotado) no se ve desde la tabla:** la tabla solo muestra eventos `ACTIVO` (CU07), y un evento agotado no lo está. El texto "AGOTADO" queda listo por si el equipo decide mostrar también los agotados (ver D-008 en la bitácora del 24/10).
+- **El caso 3a (agotado) se ve desde la tabla:** desde la D-008, la tabla del CU07 muestra también los eventos `AGOTADO`. Para mostrarlo en la demo se puede usar "Tango íntimo", de los datos de ejemplo.

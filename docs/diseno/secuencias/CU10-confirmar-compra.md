@@ -118,13 +118,13 @@ sequenceDiagram
             deactivate Cb
             Co-->>-C: comprobante
             Note right of C: carrito.vaciar() y compraEnCurso = null
+            C->>+V: mostrar(EVENTOS_DISPONIBLES)
+            deactivate V
             C->>+S: guardar()
             deactivate S
             C->>+Cb: generarTexto()
             Cb-->>-C: texto
             C->>+V: mostrarTexto("Comprobante", texto)
-            deactivate V
-            C->>+V: mostrar(EVENTOS_DISPONIBLES)
             deactivate V
         else rechazado (CU11, 5a)
             C->>+Co: registrarPago(pago)
@@ -155,7 +155,7 @@ sequenceDiagram
 6. **Si se aprueba**, el controlador llama a `Compra.confirmar(carrito)`, que vuelve a comprobar que hay un pago aprobado y, por cada ítem, ocupa los lugares en el evento y crea una `Entrada` por unidad, con código `numero-n` (por ejemplo `15-1`, `15-2`). La compra pasa a `CONFIRMADA` (CU10, paso 6).
 7. Recién ahora la compra se agrega al cliente (`Cliente.agregarCompra`) y forma parte del historial.
 8. **CU12:** `Compra.generarComprobante()` crea el `Comprobante` con número `C-15` (GRASP Creador).
-9. Se vacía el carrito (CU10, paso 8), se descarta `compraEnCurso`, se guarda todo y se muestra el texto del comprobante (`Comprobante.generarTexto()`) en un diálogo. Al aceptarlo, el cliente vuelve a la pantalla de eventos.
+9. Se vacía el carrito (CU10, paso 8) y se descarta `compraEnCurso`. Se vuelve a la pantalla de eventos **antes** de guardar: la compra ya terminó y, si fallara el guardado, el cliente no puede quedar en una pantalla de pago sin compra. Después se guarda y se muestra el comprobante (`Comprobante.generarTexto()`) en un diálogo.
 
 ## 3. Cancelar el pago (CU11, 2a)
 

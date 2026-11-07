@@ -70,7 +70,7 @@ classDiagram
         +tieneArtista(Artista artista) boolean
         +getNombresArtistas() String
         +generarDetalle() String
-        +estaActivo() boolean
+        +estaVigente() boolean
         +actualizarEstado(LocalDate hoy) void
         +getId() int
         +getNombre() String
@@ -150,6 +150,7 @@ classDiagram
         +cancelar(LocalDate hoy) void
         +tienePagoAprobado() boolean
         +getPagoAprobado() MedioDePago
+        +getNombresEventos() String
         +getNumero() int
         +getFechaHora() LocalDateTime
         +getCliente() Cliente
@@ -192,6 +193,7 @@ classDiagram
         +Comprobante(numero, compra)
         +generarTexto() String
         +getNumero() String
+        -agregarDetalle(StringBuilder texto) void
     }
 
     class MedioDePago {
@@ -364,6 +366,7 @@ classDiagram
         +generarId() int
         +registrarUsuario(Usuario usuario) void
         +autenticar(String email, String contrasenia) Usuario
+        +estaVacio() boolean
         +agregarEvento(Evento evento) void
         +getEventosDe(Organizador organizador) List~Evento~
         +getEventosDisponibles(LocalDate hoy) List~Evento~
@@ -493,6 +496,17 @@ Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que 
 - **`Evento.verificarVigente` pasó de privado a público:** el controlador lo llama **antes** de abrir el formulario de modificación (CU04) y antes de preguntar "¿Cancelar el evento?" (CU05). Así no se completa un formulario ni se confirma algo que después va a fallar. Es la misma idea que `Compra.verificarCancelable` en el CU14.
 - **`DatosSistema.getEventosDe`** ahora actualiza el estado de cada evento (`actualizarEstado(hoy)`) antes de devolverlos, igual que `getEventosDisponibles`. Así el organizador ve como `FINALIZADO` un evento cuya fecha ya pasó. La firma no cambió.
 
+
+## Cambios hechos al terminar el programa (06/11, etapas E9 a E14)
+
+- **`Evento.estaVigente()`** reemplaza a `estaActivo()`: dice si el evento está `ACTIVO` o `AGOTADO`. Esa comparación estaba repetida en tres lugares (`Evento.actualizarEstado`, `Evento.actualizarCupo` y `DatosSistema.eliminarArtista`); ahora está en uno solo.
+- **D-008 (aplicada, opción b): el cliente también ve los eventos agotados.** `DatosSistema.getEventosDisponibles` devuelve los vigentes, no solo los activos. La tabla dice "AGOTADO" y el cliente entiende por qué no puede comprar. Así se puede mostrar el flujo 3a del CU08.
+- **`Compra.getNombresEventos()`** (nuevo): nombres de los eventos sin repetir, para la tabla del historial. Si el organizador canceló un evento, lo aclara con "(CANCELADO)" (D-003: la compra no se cancela sola).
+- **`Comprobante.generarTexto()`** se reescribió para incluir todo lo que pide el CU12: email del cliente y, por evento, lugar, cantidad, precio unitario, subtotal y códigos de las entradas. El detalle está en el método privado `agregarDetalle`. Si la compra se canceló, el comprobante lo dice.
+- **`Carrito.agregarItem`** ahora verifica primero la cantidad nueva sola. Así un número enorme se rechaza antes de sumarlo, y el `int` no se desborda.
+- **`PagoTarjeta.validarVencimiento`** controla que el año esté entre 1 y 9999. Sin eso, `YearMonth.of` lanzaba una excepción no prevista con un año enorme.
+- **`DatosSistema.estaVacio()`** (nuevo): lo usa `Main` para saber si es la primera vez que se abre el programa.
+- **`DatosDeEjemplo`** (nueva, paquete `persistencia`): carga los usuarios, artistas, eventos y compras de la demo la primera vez. Usa los constructores y métodos del modelo, así que pasa por todas las validaciones. No aparece en el diagrama de la parte 3 porque no es parte del modelo ni de la interfaz `Persistencia`: solo la llama `Main`.
 
 ## Cambios hechos al programar la asignación y la consulta (24/10, etapa E8)
 

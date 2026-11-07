@@ -148,11 +148,11 @@ flowchart LR
 
 ### CU07 — Consultar eventos disponibles
 - **Actor:** Cliente
-- **Descripción:** Muestra los eventos activos con entradas disponibles.
+- **Descripción:** Muestra los eventos activos y los agotados (D-008), que se ven como AGOTADO.
 - **Flujo principal:**
   1. El cliente solicita el listado.
-  2. El sistema muestra los eventos activos con nombre, fecha, lugar, artistas, precio y entradas disponibles.
-- **Alternativo:** 2a. No hay eventos activos → el sistema informa que no hay eventos disponibles.
+  2. El sistema muestra esos eventos con nombre, fecha, lugar, artistas, precio y entradas disponibles.
+- **Alternativo:** 2a. No hay eventos → el sistema informa que no hay eventos disponibles.
 
 ### CU08 — Consultar disponibilidad de entradas
 - **Actor:** Cliente
