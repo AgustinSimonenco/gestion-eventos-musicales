@@ -80,6 +80,16 @@ public class DatosSistema implements Serializable {
     }
 
     /**
+     * Dice si todavía no hay ningún dato. Lo usa {@code Main} para cargar los
+     * datos de ejemplo la primera vez que se abre el programa.
+     *
+     * @return {@code true} si no hay usuarios, eventos ni artistas
+     */
+    public boolean estaVacio() {
+        return usuarios.isEmpty() && eventos.isEmpty() && artistas.isEmpty();
+    }
+
+    /**
      * Agrega un evento ya creado y validado (CU03).
      *
      * @param evento evento nuevo
@@ -107,18 +117,19 @@ public class DatosSistema implements Serializable {
     }
 
     /**
-     * Devuelve los eventos en los que se pueden comprar entradas (CU07).
-     * Antes actualiza el estado de cada uno, porque alguno pudo haber pasado
-     * de fecha desde la última vez.
+     * Devuelve los eventos que se le muestran al cliente (CU07): los activos
+     * y los agotados (D-008), que se ven como AGOTADO para que entienda por
+     * qué no puede comprar. Antes actualiza el estado de cada uno, porque
+     * alguno pudo haber pasado de fecha desde la última vez.
      *
      * @param hoy fecha de hoy
-     * @return eventos activos
+     * @return eventos activos o agotados
      */
     public List<Evento> getEventosDisponibles(LocalDate hoy) {
         List<Evento> resultado = new ArrayList<Evento>();
         for (Evento evento : eventos) {
             evento.actualizarEstado(hoy);
-            if (evento.estaActivo()) {
+            if (evento.estaVigente()) {
                 resultado.add(evento);
             }
         }
@@ -164,9 +175,7 @@ public class DatosSistema implements Serializable {
     public void eliminarArtista(Artista artista) throws ArtistaException {
         for (Evento evento : eventos) {
             // "Evento activo" incluye a los agotados: todavía no se hicieron
-            boolean vigente = evento.getEstado() == EstadoEvento.ACTIVO
-                    || evento.getEstado() == EstadoEvento.AGOTADO;
-            if (vigente && evento.tieneArtista(artista)) {
+            if (evento.estaVigente() && evento.tieneArtista(artista)) {
                 throw new ArtistaException("No se puede dar de baja: " + artista.getNombre()
                         + " está en el evento " + evento.getNombre() + ".");
             }

@@ -110,7 +110,7 @@ public class PantallaMisEventos extends Pantalla implements ActionListener {
                 evento.getLugar(),
                 evento.getCapacidad(),
                 evento.getEntradasDisponibles(),
-                String.format("$ %.2f", evento.getPrecioEntrada()),
+                formatearPrecio(evento.getPrecioEntrada()),
                 evento.getEstado()
             });
         }

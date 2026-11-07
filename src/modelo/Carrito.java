@@ -37,6 +37,9 @@ public class Carrito implements Serializable {
      */
     public void agregarItem(Evento evento, int cantidad) throws DatosInvalidosException, EventoException {
         validarCantidad(cantidad);
+        // Primero se controla lo nuevo solo: así un número enorme se rechaza
+        // acá y no se desborda el int al sumarlo con lo que ya había
+        evento.verificarDisponibilidad(cantidad);
         ItemCarrito item = buscarItem(evento);
         int total = cantidad;
         if (item != null) {

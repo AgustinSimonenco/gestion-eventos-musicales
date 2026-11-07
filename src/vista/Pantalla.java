@@ -91,4 +91,14 @@ public abstract class Pantalla extends JPanel {
     protected String formatearFecha(LocalDate fecha) {
         return fecha.format(FORMATO_FECHA);
     }
+
+    /**
+     * Convierte un importe en texto con el signo y dos decimales.
+     *
+     * @param importe precio, subtotal o total
+     * @return el importe como texto, por ejemplo "$ 1500,50"
+     */
+    protected String formatearPrecio(double importe) {
+        return String.format("$ %.2f", importe);
+    }
 }

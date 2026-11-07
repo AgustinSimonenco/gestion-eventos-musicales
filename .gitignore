@@ -10,3 +10,8 @@ target/
 # Archivo de datos que genera el programa al usarlo
 datos.dat
 fuentes.txt
+# Salida compilada de los tests
+bin-test/
+fuentes-test.txt
+# Javadoc generado (se arma con generar-javadoc)
+javadoc/

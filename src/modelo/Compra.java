@@ -160,6 +160,32 @@ public class Compra implements Serializable {
         return null;
     }
 
+    /**
+     * Arma los nombres de los eventos de la compra, sin repetir, para la
+     * tabla del historial (CU13). Si el organizador canceló un evento, lo
+     * aclara, así el cliente sabe que le conviene cancelar la compra (D-003).
+     *
+     * @return por ejemplo "Rock en el Luna, Noche íntima (CANCELADO)"
+     */
+    public String getNombresEventos() {
+        List<Evento> eventos = new ArrayList<Evento>();
+        String nombres = "";
+        for (Entrada entrada : entradas) {
+            Evento evento = entrada.getEvento();
+            if (!eventos.contains(evento)) {
+                eventos.add(evento);
+                if (!nombres.isEmpty()) {
+                    nombres = nombres + ", ";
+                }
+                nombres = nombres + evento.getNombre();
+                if (evento.getEstado() == EstadoEvento.CANCELADO) {
+                    nombres = nombres + " (CANCELADO)";
+                }
+            }
+        }
+        return nombres;
+    }
+
     /** @return número único de la compra */
     public int getNumero() {
         return numero;

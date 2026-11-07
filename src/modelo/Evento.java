@@ -259,10 +259,12 @@ public class Evento implements Serializable {
     }
 
     /**
-     * @return {@code true} si se pueden comprar entradas
+     * Dice si el evento todavía no terminó: no fue cancelado ni pasó su fecha.
+     *
+     * @return {@code true} si está {@code ACTIVO} o {@code AGOTADO}
      */
-    public boolean estaActivo() {
-        return estado == EstadoEvento.ACTIVO;
+    public boolean estaVigente() {
+        return estado == EstadoEvento.ACTIVO || estado == EstadoEvento.AGOTADO;
     }
 
     /**
@@ -272,8 +274,7 @@ public class Evento implements Serializable {
      * @param hoy fecha de hoy
      */
     public void actualizarEstado(LocalDate hoy) {
-        boolean vigente = estado == EstadoEvento.ACTIVO || estado == EstadoEvento.AGOTADO;
-        if (vigente && fecha.isBefore(hoy)) {
+        if (estaVigente() && fecha.isBefore(hoy)) {
             estado = EstadoEvento.FINALIZADO;
         }
     }
@@ -374,7 +375,7 @@ public class Evento implements Serializable {
 
     // Pone ACTIVO o AGOTADO según queden lugares. No toca CANCELADO ni FINALIZADO.
     private void actualizarCupo() {
-        if (estado == EstadoEvento.ACTIVO || estado == EstadoEvento.AGOTADO) {
+        if (estaVigente()) {
             if (getEntradasDisponibles() == 0) {
                 estado = EstadoEvento.AGOTADO;
             } else {

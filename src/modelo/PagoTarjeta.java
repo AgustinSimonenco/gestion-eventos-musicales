@@ -83,6 +83,10 @@ public class PagoTarjeta extends Pago {
         if (mes < 1 || mes > 12) {
             throw new DatosInvalidosException("El mes de vencimiento tiene que ser de 1 a 12.");
         }
+        // Sin este control, YearMonth.of lanza una excepción no prevista con un año enorme
+        if (anio < 1 || anio > 9999) {
+            throw new DatosInvalidosException("El año de vencimiento no es válido.");
+        }
         if (YearMonth.of(anio, mes).isBefore(YearMonth.now())) {
             throw new DatosInvalidosException("La tarjeta está vencida.");
         }

@@ -65,7 +65,12 @@ public abstract class Controlador {
      */
     protected double convertirDecimal(String texto, String campo) throws DatosInvalidosException {
         try {
-            return Double.parseDouble(texto.trim().replace(',', '.'));
+            double numero = Double.parseDouble(texto.trim().replace(',', '.'));
+            // parseDouble acepta "NaN" e "Infinity", que no sirven como precio
+            if (Double.isNaN(numero) || Double.isInfinite(numero)) {
+                throw new DatosInvalidosException(campo + " tiene que ser un número.");
+            }
+            return numero;
         } catch (NumberFormatException e) {
             throw new DatosInvalidosException(campo + " tiene que ser un número.");
         }
