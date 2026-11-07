@@ -1,6 +1,6 @@
 @echo off
 rem Compila el programa y los tests, y ejecuta los tests con JUnit.
-call compilar.bat
+call .mpilar.bat
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 if exist bin-test rmdir /s /q bin-test
 mkdir bin-test
