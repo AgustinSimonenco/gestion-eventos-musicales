@@ -4,7 +4,7 @@ Trabajo Práctico Integrador — **Algoritmos I** (2026, 2.º cuatrimestre)
 
 Aplicación de escritorio para administrar recitales: gestión de eventos, asignación de artistas, venta de entradas y registro de pagos. Centraliza la administración de eventos y la interacción con los usuarios.
 
-> 🚧 Etapa actual: documentación de diseño terminada (E1 a E3). Desde el 20/10 empieza la implementación.
+> ✅ Proyecto terminado: los 15 casos de uso funcionan desde la interfaz. Para verlo funcionando, seguí el [manual de uso](docs/manual-de-uso.md), que incluye usuarios de ejemplo y un guion de demo.
 
 ## Actores
 
@@ -25,15 +25,22 @@ Aplicación de escritorio para administrar recitales: gestión de eventos, asign
 | p4 | [Requerimientos no funcionales](docs/analisis/p4-requerimientos-no-funcionales.md) |
 | — | [Casos de uso](docs/analisis/casos-de-uso.md) |
 
+### Uso y defensa
+
+| Documento | Para qué sirve |
+|---|---|
+| [Manual de uso](docs/manual-de-uso.md) | Cómo usar el programa, usuarios de ejemplo y guion de demo |
+| [Guía de defensa](docs/guia-de-defensa.md) | Trazabilidad de cada caso de uso, patrones y preguntas |
+
 ### Diseño (Seguimiento II)
 
 | Punto | Documento |
 |---|---|
 | p5 | [Diagrama conceptual](docs/diseno/p5-diagrama-conceptual.md) *(multiplicidades de Compra corregidas el 19/10)* |
-| p6 | [Diagrama de clases del modelo](docs/diseno/p6-diagrama-de-clases-modelo.md) *(aprobado el 17/10, ajustado el 19/10)* |
-| p7 | [Diagrama de vista y controlador](docs/diseno/p7-diagrama-vista-controlador.md) *(aprobado el 18/10, ajustado el 19/10)* |
-| p8 | [Diagramas de secuencia de 5 casos de uso](docs/diseno/p8-diagramas-de-secuencia.md) *(versión E3, pendiente de aprobación)* |
-| p9 | [Diagrama de navegación de la GUI](docs/diseno/p9-diagrama-de-navegacion.md) *(aprobado el 18/10)* |
+| p6 | [Diagrama de clases del modelo](docs/diseno/p6-diagrama-de-clases-modelo.md) *(actualizado con el código final)* |
+| p7 | [Diagrama de vista y controlador](docs/diseno/p7-diagrama-vista-controlador.md) *(actualizado con el código final)* |
+| p8 | [Diagramas de secuencia](docs/diseno/p8-diagramas-de-secuencia.md) *(los 5 elegidos y el resto de los casos de uso)* |
+| p9 | [Diagrama de navegación de la GUI](docs/diseno/p9-diagrama-de-navegacion.md) *(actualizado con el código final)* |
 
 ## Tecnologías
 
@@ -50,3 +57,22 @@ Aplicación de escritorio para administrar recitales: gestión de eventos, asign
 - [CLAUDE.md](CLAUDE.md): reglas del proyecto y procedimiento nocturno que sigue Claude.
 - Rama `desarrollo`: avances diarios, pendientes de revisión. Rama `main`: lo aprobado por el equipo.
 - El equipo no toca el repo entre las 23:30 y las 06:00.
+
+## Cómo compilar y ejecutar
+
+Hace falta un JDK 9 o más nuevo: el código se compila siempre como Java 8 (`--release 8`), una opción que el `javac` de Java 8 no tiene.
+
+| Sistema | Compilar | Ejecutar |
+|---|---|---|
+| Windows | `compilar.bat` | `ejecutar.bat` |
+| Linux / Mac / Git Bash | `./compilar.sh` | `./ejecutar.sh` |
+
+- **Para la demo:** `ejecutar-demo.bat` o `./ejecutar-demo.sh` borra `datos.dat` y abre el programa con los datos de ejemplo. Usuarios: `ana@demo.com` (organizadora), `juan@demo.com` y `maria@demo.com` (clientes), contraseña `1234`.
+- **Tests:** `probar.bat` o `./probar.sh` ejecuta los 64 tests JUnit.
+- **Javadoc:** `generar-javadoc.bat` o `./generar-javadoc.sh` lo genera en `javadoc/`.
+
+- La salida compilada va a `bin/` (no se sube a git).
+- Los datos se guardan en `datos.dat`, en la carpeta desde donde se ejecuta (tampoco se sube a git). Si se borra ese archivo, el programa vuelve a arrancar con los datos de ejemplo.
+- En VS Code o Antigravity, con el Extension Pack for Java, `.vscode/settings.json` ya configura `src/`, `test/`, `bin/` y el jar de JUnit de `lib/`.
+
+Estructura del código (`src/`): `modelo`, `vista`, `controlador`, `persistencia`, `excepciones` y `Main.java`. Los tests están en `test/`.

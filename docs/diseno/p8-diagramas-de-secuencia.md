@@ -14,8 +14,18 @@ Elegidos el 17/10 (D-005, aprobado). Entre los cinco aparecen todos los patrones
 | CU10 | [Confirmar compra](secuencias/CU10-confirmar-compra.md) (con CU11 y CU12) | Strategy (`MedioDePago`), Template Method (`Pago.procesar`), GRASP Creador (`Compra` crea `Entrada` y `Comprobante`). |
 | CU14 | [Cancelar compra](secuencias/CU14-cancelar-compra.md) | Anula entradas y libera capacidad: varios objetos del modelo cambian juntos. |
 
+**Otros diagramas.** Además de estos cinco, en la carpeta [`secuencias/`](secuencias/) hay un diagrama por cada caso de uso que se va programando, para la defensa: [CU01 Registrar usuario](secuencias/CU01-registrar-usuario.md), [CU04 Modificar evento](secuencias/CU04-modificar-evento.md), [CU05 Cancelar evento](secuencias/CU05-cancelar-evento.md), [CU06 Asignar artistas](secuencias/CU06-asignar-artistas.md), [CU07 Consultar eventos disponibles](secuencias/CU07-consultar-eventos-disponibles.md), [CU08 Consultar disponibilidad](secuencias/CU08-consultar-disponibilidad.md), [CU13 Consultar historial](secuencias/CU13-consultar-historial.md) y [CU15 Gestionar artistas](secuencias/CU15-gestionar-artistas.md). El CU11 y el CU12 están dibujados dentro del [CU10](secuencias/CU10-confirmar-compra.md), y *Ver comprobante* (CU12 desde el historial), dentro del CU13. Así, los 15 casos de uso tienen su diagrama.
+
 ## Cómo leer los diagramas
 
+- **Orden de los participantes, de izquierda a derecha, según la capa MVC** (pedido del profesor):
+  1. la persona (actor);
+  2. la **vista**: las pantallas y `VentanaPrincipal`;
+  3. el **controlador**: el controlador del caso de uso y `Sesion` (que está en el paquete `controlador`);
+  4. el **modelo**: `DatosSistema`, `Evento`, `Carrito`, `Compra`, etc.;
+  5. al final, `Persistencia`, la capa que escribe el archivo (la llama `Sesion.guardar()`). No es parte del modelo, pero está "debajo" de él, por eso va a la derecha de todo.
+
+  Así las flechas van casi siempre de izquierda a derecha (la pantalla le pide al controlador y el controlador al modelo), y las que vuelven hacia la izquierda son respuestas o excepciones.
 - **Flecha llena (`->>`):** un objeto llama un método de otro. Si la flecha vuelve al mismo objeto, es un método propio (por ejemplo `convertirEntero`).
 - **Flecha punteada (`-->>`):** lo que devuelve el método.
 - **Flecha punteada con cruz (`--x`):** el método **lanza una excepción** en lugar de devolver algo.

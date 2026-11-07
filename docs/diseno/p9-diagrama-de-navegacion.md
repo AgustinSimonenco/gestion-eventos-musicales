@@ -28,6 +28,9 @@ stateDiagram-v2
 - **CU02 – menú según el rol:** `ControladorUsuarios.iniciarSesion` le pregunta al usuario `getTipo()`. Si es organizador, muestra `PantallaMisEventos`; si es cliente, `PantallaEventosDisponibles`. Un cliente **no tiene ningún botón** que lo lleve a una pantalla del organizador, y al revés. Por eso los *casts* de `Sesion.getCliente()` y `getOrganizador()` son seguros.
 - **Cerrar sesión** pone `usuarioActual` en `null` y vuelve al login.
 - Si el login o el registro fallan (email repetido, contraseña incorrecta), se muestra un diálogo de error y **se queda en la misma pantalla**.
+- **Registro exitoso:** se muestra el diálogo "Listo, *nombre*. Ya podés iniciar sesión." y se vuelve al login con los campos vacíos. No se entra directo: así la persona prueba su email y contraseña (CU01 → CU02).
+- *Registrarse* y *Volver* solo cambian de pantalla, por eso la pantalla llama directo a `ventana.mostrar(...)` sin pasar por el controlador (ver p7, parte 2).
+- En el login, apretar **Enter** en el campo de la contraseña es lo mismo que tocar *Ingresar*.
 
 ## 2. Organizador
 
@@ -61,7 +64,11 @@ stateDiagram-v2
 
 - **El mismo formulario sirve para crear y modificar.** Si se llega con *Nuevo*, los campos están vacíos y se ve la lista de artistas para elegir (D-002). Si se llega con *Modificar*, los campos vienen con los datos del evento y la lista de artistas no se muestra, porque los artistas se cambian en `PantallaAsignarArtistas` (CU06).
 - **Volver desde `PantallaArtistas`** siempre lleva a `PantallaMisEventos`, aunque se haya llegado desde el formulario o desde la asignación. Es más simple de programar y de explicar; al volver, el organizador entra de nuevo al evento y ya ve el artista nuevo (ver "Decisiones tomadas" en la bitácora del 18/10).
-- **Sin evento elegido:** *Modificar*, *Cancelar evento* y *Artistas del evento* necesitan una fila elegida en la tabla. Si no hay ninguna, la pantalla muestra un aviso y no navega.
+- **Sin evento elegido:** *Modificar*, *Cancelar evento* y *Artistas del evento* necesitan una fila elegida en la tabla. Si no hay ninguna, la pantalla muestra un aviso ("Elegí un evento de la tabla.") y no navega. Lo mismo pasa en `PantallaArtistas` con *Modificar* y *Baja*.
+- **Evento cancelado o finalizado:** *Modificar*, *Cancelar evento* y *Artistas del evento* muestran el error y se quedan en `PantallaMisEventos`, sin abrir el formulario ni la asignación ni preguntar nada (el controlador llama antes a `Evento.verificarVigente`).
+- **Después de *Asignar al evento* o *Quitar del evento*** (CU06) se muestra un mensaje corto y se queda en `PantallaAsignarArtistas` con las listas recargadas. Si el artista ya estaba (3a) o es el último del evento (3c), se muestra el error y no cambia nada. Sin artista elegido en la lista, la pantalla avisa y no llama al controlador.
+- **Después de *Alta*, *Modificar* o *Baja* de un artista** se queda en `PantallaArtistas` con la tabla recargada. *Baja* pregunta antes "¿Dar de baja a ...?".
+- *Gestionar artistas*, *Nuevo artista* y los *Volver* solo cambian de pantalla: la pantalla llama directo a `ventana.mostrar(...)`. *Nuevo* pasa por `ControladorEventos.nuevoEvento()`, que deja el formulario en modo crear.
 
 ## 3. Cliente
 
@@ -85,8 +92,9 @@ stateDiagram-v2
     Carrito --> Carrito : Cambiar cantidad / Quitar (CU09, 5a)
     Carrito --> Eventos : Seguir comprando
 
+    Carrito --> Carrito : Confirmar compra, un evento ya no tiene lugar (CU10, 2a)
     Carrito --> Resumen : Confirmar compra (CU10)
-    Resumen --> Carrito : No acepta (3a) / un evento ya no tiene lugar (4a)
+    Resumen --> Carrito : No acepta (4a)
     Resumen --> Pago : Acepta
 
     Pago --> Pago : Pagar, pago rechazado (CU11, 5a)
@@ -104,10 +112,16 @@ stateDiagram-v2
     state "Diálogo: comprobante" as Comprobante2
 ```
 
+- **Eventos agotados (D-008):** aparecen en la tabla con "AGOTADO" en la columna de disponibles. *Ver disponibilidad* lo muestra (CU08, 3a), y *Agregar al carrito* da el error de que no quedan entradas.
+- **Sin eventos (CU07, 2a):** la tabla queda vacía y arriba dice "Por ahora no hay eventos disponibles.". No se abre un diálogo, porque aparecería cada vez que se entra a la pantalla.
+- **Ver disponibilidad (CU08):** necesita una fila elegida (si no, avisa "Elegí un evento de la tabla."). Muestra el detalle en un diálogo (`mostrarTexto`) y, al aceptar, se queda en la misma pantalla. Si el evento fue cancelado o ya pasó desde que se armó la tabla (2a y 2b), muestra el error y **recarga la tabla**, así ese evento desaparece.
+- **Sin fila elegida:** *Ver disponibilidad* y *Agregar al carrito* avisan "Elegí un evento de la tabla."; *Cambiar cantidad* y *Quitar*, "Elegí un ítem de la tabla."; *Ver comprobante* y *Cancelar compra*, "Elegí una compra de la tabla.". En ningún caso se llama al controlador.
+- *Carrito*, *Mis compras*, *Seguir comprando* y *Volver* solo cambian de pantalla: la pantalla llama directo a `ventana.mostrar(...)`.
+- **Historial vacío (CU13, 2a):** la tabla queda vacía y arriba dice "Todavía no hiciste ninguna compra.".
 - **Agregar al carrito con error** (cantidad 0, sin lugar): se muestra el error (por ejemplo "quedan 3 entradas") y **se queda en `PantallaEventosDisponibles`** para corregir la cantidad (CU09, 2a y 3a).
-- **Confirmar compra (CU10):** `ControladorCompras.iniciarCompra` primero verifica el carrito. Si un evento fue cancelado o ya no tiene lugar, muestra el error y se queda en el carrito sin cobrar (4a). Si está todo bien, muestra el resumen con `confirmar(...)`; si el cliente acepta, se crea la compra `PENDIENTE` y se pasa a `PantallaPago`.
+- **Confirmar compra (CU10):** `ControladorCompras.iniciarCompra` primero verifica el carrito. Si un evento fue cancelado o ya no tiene lugar, muestra el error y se queda en el carrito sin cobrar (2a). Si está todo bien, muestra el resumen con `confirmar(...)`; si el cliente acepta, se crea la compra `PENDIENTE` y se pasa a `PantallaPago`.
 - **Pago rechazado (CU11, 5a):** se muestra el motivo y se queda en `PantallaPago`, con la misma compra en curso. El cliente puede reintentar con otro medio o tocar *Cancelar pago*.
-- **Pago aprobado:** se confirma la compra, se genera el comprobante, se vacía el carrito y se muestra el comprobante en un diálogo. Al aceptar, el cliente vuelve al inicio.
+- **Pago aprobado:** se confirma la compra, se genera el comprobante, se vacía el carrito, se vuelve al inicio del cliente y, encima, se muestra el comprobante en un diálogo.
 - **Cancelar compra (CU14):** antes de mostrar el diálogo de confirmación, el controlador verifica que se pueda cancelar. Si la compra ya estaba cancelada o el evento es hoy o ya pasó, se muestra el error y se queda en `PantallaHistorial`, sin preguntar nada (ver [secuencia de CU14](secuencias/CU14-cancelar-compra.md)).
 - **El comprobante aparece dos veces en el diagrama** solo porque se llega desde dos lugares (después de pagar y desde el historial). Es el mismo diálogo: `VentanaPrincipal.mostrarTexto`.
 

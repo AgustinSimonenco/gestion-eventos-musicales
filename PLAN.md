@@ -15,6 +15,8 @@ Claude trabaja todas las noches a las 00:00 en la rama `desarrollo`, siguiendo e
 
 ## Etapas
 
+> Las etapas E9 a E16 se hicieron juntas el 06/11, porque no hubo corridas nocturnas desde el 25/10. Ver la [bitácora del 06/11](bitacora/2026-11-06.md).
+
 Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa a las 00:00 del 17/10.
 
 ### Diseño (para el Seguimiento II)
@@ -33,7 +35,7 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
 
 ### Implementación
 
-- [ ] **E4 · 20/10 — Esqueleto del proyecto**
+- [x] **E4 · 20/10 — Esqueleto del proyecto**
   - Estructura `src/`, `test/`, `lib/` y `.vscode/settings.json`.
   - Scripts para compilar y ejecutar.
   - `Main`.
@@ -41,24 +43,24 @@ Las fechas son las de la noche en que Claude ejecuta la etapa: "17/10" significa
   - Clases base del modelo.
   - Interfaz de persistencia con su implementación en archivos.
   - Ventana principal vacía.
-- [ ] **E5 · 21/10 — Usuarios:** CU01 Registrarse, CU02 Iniciar sesión, menú según el rol.
-- [ ] **E6 · 22/10 — Artistas y eventos:** CU15 Gestionar artistas, CU03 Crear evento.
-- [ ] **E7 · 23/10 — Eventos (etapa liviana: es el día del parcial):** CU04 Modificar evento, CU05 Cancelar evento.
-- [ ] **E8 · 24/10 — Asignación y consulta:** CU06 Asignar artistas, CU07 Consultar eventos, CU08 Consultar disponibilidad.
-- [ ] **E9 · 25/10 — Carrito:** CU09 Agregar entradas al carrito (modificar y quitar ítems).
-- [ ] **E10 · 26/10 — Compra y pago:** CU10 Confirmar compra, CU11 Realizar pago (tarjeta y transferencia).
-- [ ] **E11 · 27/10 — Comprobante e historial:** CU12 Generar comprobante, CU13 Consultar historial. Revisar que los diagramas coincidan con el código para el Seguimiento II.
-- [ ] **E12 · 28/10 — Cancelación:** CU14 Cancelar compra. Aplicar la devolución del profesor en el Seguimiento II.
+- [x] **E5 · 21/10 — Usuarios:** CU01 Registrarse, CU02 Iniciar sesión, menú según el rol.
+- [x] **E6 · 22/10 — Artistas y eventos:** CU15 Gestionar artistas, CU03 Crear evento.
+- [x] **E7 · 23/10 — Eventos (etapa liviana: es el día del parcial):** CU04 Modificar evento, CU05 Cancelar evento.
+- [x] **E8 · 24/10 — Asignación y consulta:** CU06 Asignar artistas, CU07 Consultar eventos, CU08 Consultar disponibilidad.
+- [x] **E9 · 25/10 — Carrito:** CU09 Agregar entradas al carrito (modificar y quitar ítems).
+- [x] **E10 · 26/10 — Compra y pago:** CU10 Confirmar compra, CU11 Realizar pago (tarjeta y transferencia).
+- [x] **E11 · 27/10 — Comprobante e historial:** CU12 Generar comprobante, CU13 Consultar historial. Revisar que los diagramas coincidan con el código para el Seguimiento II.
+- [x] **E12 · 28/10 — Cancelación:** CU14 Cancelar compra. Aplicar la devolución del profesor en el Seguimiento II.
 
 ### Cierre
 
-- [ ] **E13 · 29/10 — Pruebas:** tests JUnit de las reglas del modelo (capacidad, pagos, cancelaciones, validaciones).
-- [ ] **E14 · 30/10 — Robustez:**
+- [x] **E13 · 29/10 — Pruebas:** tests JUnit de las reglas del modelo (capacidad, pagos, cancelaciones, validaciones).
+- [x] **E14 · 30/10 — Robustez:**
   - Revisar que todas las pantallas capturen las excepciones y muestren mensajes claros.
   - Validaciones de datos.
   - Datos de ejemplo para la demo.
-- [ ] **E15 · 31/10 — Documentación de uso:** Javadoc generado, manual de uso y README final.
-- [ ] **E16 · 01/11 — Revisión final y guía de defensa:**
+- [x] **E15 · 31/10 — Documentación de uso:** Javadoc generado, manual de uso y README final.
+- [x] **E16 · 01/11 — Revisión final y guía de defensa:**
   - Revisar la consistencia de todos los diagramas con el código.
   - Escribir `docs/guia-de-defensa.md`, con la trazabilidad de cada caso de uso: pantalla → controlador → modelo → diagramas.
 

@@ -10,47 +10,62 @@ El usuario escribe email y contraseña en `PantallaLogin` y toca *Ingresar*. Si 
 sequenceDiagram
     actor U as Persona
     participant P as PantallaLogin
+    participant V as VentanaPrincipal
     participant C as ControladorUsuarios
     participant S as Sesion
     participant D as DatosSistema
     participant Us as Usuario (Cliente u Organizador)
-    participant V as VentanaPrincipal
 
-    U->>P: escribe email y contraseña y toca Ingresar
+    U->>+P: escribe email y contraseña y toca Ingresar
     P->>P: actionPerformed(e)
-    P->>C: iniciarSesion(email, contrasenia)
-    C->>S: getDatos()
-    S-->>C: datos
-    C->>D: autenticar(email, contrasenia)
-    loop por cada usuario, hasta encontrar el email
-        D->>Us: getEmail()
-        Us-->>D: email
-    end
-    D->>Us: validarContrasenia(contrasenia)
-    Us-->>D: true o false
+    P->>+C: iniciarSesion(email, contrasenia)
+    C->>+S: getDatos()
+    S-->>-C: datos
     alt email encontrado y contraseña correcta
-        D-->>C: usuario
-        C->>S: setUsuarioActual(usuario)
-        C->>Us: getTipo()
-        Us-->>C: ORGANIZADOR o CLIENTE
+        C->>+D: autenticar(email, contrasenia)
+        loop por cada usuario, hasta encontrar el email
+            D->>+Us: getEmail()
+            Us-->>-D: email
+        end
+        D->>+Us: validarContrasenia(contrasenia)
+        Us-->>-D: true
+        D-->>-C: usuario
+        C->>+S: setUsuarioActual(usuario)
+        deactivate S
+        C->>+Us: getTipo()
+        Us-->>-C: ORGANIZADOR o CLIENTE
         alt es organizador
-            C->>V: mostrar(MIS_EVENTOS)
+            C->>+V: mostrar(MIS_EVENTOS)
+            deactivate V
         else es cliente
-            C->>V: mostrar(EVENTOS_DISPONIBLES)
+            C->>+V: mostrar(EVENTOS_DISPONIBLES)
+            deactivate V
         end
         Note over V: antes de mostrarla, la ventana llama a actualizar() de esa pantalla
     else email inexistente o contraseña incorrecta (2a)
-        D--xC: UsuarioException
-        C->>V: mostrarError(e.getMessage())
+        C->>+D: autenticar(email, contrasenia)
+        loop por cada usuario, hasta encontrar el email
+            D->>+Us: getEmail()
+            Us-->>-D: email
+        end
+        opt si encontró el email
+            D->>+Us: validarContrasenia(contrasenia)
+            Us-->>-D: false
+        end
+        D--x-C: UsuarioException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over P,V: se queda en PantallaLogin
     end
+    deactivate C
+    deactivate P
 ```
 
 Si no se encuentra ningún usuario con ese email, `autenticar` no llama a `validarContrasenia`: lanza la excepción directamente.
 
 ## Paso a paso
 
-1. **`PantallaLogin.actionPerformed`** ve que se tocó `botonIngresar`. Lee `campoEmail.getText()` y la contraseña (`new String(campoContrasenia.getPassword())`, porque un `JPasswordField` devuelve un arreglo de `char`). Llama a `controlador.iniciarSesion(email, contrasenia)`.
+1. **`PantallaLogin.actionPerformed`** ve que se tocó `botonIngresar`. Lee `campoEmail.getText()` y la contraseña (`new String(campoContrasenia.getPassword())`, porque un `JPasswordField` devuelve un arreglo de `char`). Llama a `controlador.iniciarSesion(email, contrasenia)`. Lo mismo pasa si se aprieta Enter en el campo de la contraseña (`e.getSource() == campoContrasenia`).
 2. **`ControladorUsuarios.iniciarSesion`** le pide a la `Sesion` los datos cargados y llama a `DatosSistema.autenticar`.
 3. **`DatosSistema.autenticar`** recorre la lista de usuarios buscando el email. Si lo encuentra, le pregunta a **ese** usuario si la contraseña es la suya (`validarContrasenia`). La contraseña se compara adentro de `Usuario`, que es el que la tiene (GRASP Experto).
 4. **Si todo está bien**, devuelve el usuario. El controlador lo guarda en la sesión (`setUsuarioActual`) y le pregunta `getTipo()`.

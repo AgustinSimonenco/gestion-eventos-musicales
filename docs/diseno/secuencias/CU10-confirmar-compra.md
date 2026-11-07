@@ -16,50 +16,54 @@ Entre la parte 1 y la 2, el `ControladorCompras` recuerda la compra en su atribu
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaCarrito
+    participant V as VentanaPrincipal
     participant C as ControladorCompras
     participant S as Sesion
     participant Ca as Carrito
     participant E as Evento
     participant Co as Compra
-    participant V as VentanaPrincipal
 
-    U->>P: toca Confirmar compra
-    P->>C: iniciarCompra()
-    C->>S: getCliente()
-    S-->>C: cliente
+    U->>+P: toca Confirmar compra
+    P->>+C: iniciarCompra()
+    C->>+S: getCliente()
+    S-->>-C: cliente
     Note right of C: cliente.getCarrito() devuelve su carrito
-    C->>Ca: verificarDisponibilidad()
+    C->>+Ca: verificarDisponibilidad()
     Ca->>Ca: estaVacio()
     loop por cada ItemCarrito
-        Ca->>E: verificarDisponibilidad(item.getCantidad())
+        Ca->>+E: verificarDisponibilidad(item.getCantidad())
+        deactivate E
     end
-    alt carrito vacío (1a) o un evento cancelado o sin lugar (4a)
-        Ca--xC: CompraException, EventoException o SinDisponibilidadException
-        C->>V: mostrarError(e.getMessage())
+    Ca-->>-C: ok, o CompraException / EventoException / SinDisponibilidadException
+    alt carrito vacío (1a) o un evento cancelado o sin lugar (2a)
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
         Note over P,V: se queda en PantallaCarrito sin cobrar
     else todo el carrito se puede comprar
-        Ca-->>C: ok
         C->>C: armarResumen(carrito)
-        C->>V: confirmar(resumen)
-        V-->>C: true o false
+        C->>+V: confirmar(resumen)
+        V-->>-C: true o false
         alt el cliente acepta
-            C->>S: getDatos()
-            S-->>C: datos
+            C->>+S: getDatos()
+            S-->>-C: datos
             Note right of C: datos.generarId() da el número de la compra
-            C->>Co: new Compra(numero, cliente, carrito.getTotal())
-            Co-->>C: compraEnCurso en estado PENDIENTE
-            C->>V: mostrar(PAGO)
+            C->>+Co: new Compra(numero, cliente, carrito.getTotal())
+            Co-->>-C: compraEnCurso en estado PENDIENTE
+            C->>+V: mostrar(PAGO)
+            deactivate V
             Note over V: PantallaPago.actualizar() pide getMontoAPagar() para mostrar el monto
-        else no acepta (3a)
+        else no acepta (4a)
             Note over P,V: se queda en PantallaCarrito para modificarlo
         end
     end
+    deactivate C
+    deactivate P
 ```
 
 ### Paso a paso
 
 1. **`ControladorCompras.iniciarCompra`** busca el carrito del cliente y le pide `verificarDisponibilidad()`.
-2. **`Carrito.verificarDisponibilidad`** lanza `CompraException` si está vacío (1a). Si no, le pide a **cada** evento `verificarDisponibilidad(cantidad)`. Se verifica de nuevo aunque ya se verificó al agregar (CU09), porque desde entonces el organizador pudo cancelar un evento (4a).
+2. **`Carrito.verificarDisponibilidad`** lanza `CompraException` si está vacío (1a). Si no, le pide a **cada** evento `verificarDisponibilidad(cantidad)`. Se verifica de nuevo aunque ya se verificó al agregar (CU09), porque desde entonces el organizador pudo cancelar un evento (2a).
 3. **`armarResumen`** (método privado del controlador) arma un texto con cada evento, cantidad y subtotal, y el total. La ventana lo muestra con `confirmar(resumen)`: un diálogo de sí o no.
 4. **Si el cliente acepta**, se crea la `Compra` en estado `PENDIENTE` con el total del carrito y se guarda en `compraEnCurso`. Todavía **no** se agrega al cliente ni se guarda en el archivo: si el cliente se arrepiente, simplemente se descarta.
 
@@ -69,57 +73,78 @@ sequenceDiagram
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaPago
+    participant V as VentanaPrincipal
     participant C as ControladorCompras
+    participant S as Sesion
     participant PT as PagoTarjeta (un MedioDePago)
     participant Co as Compra
     participant E as Evento
     participant Cl as Cliente
     participant Cb as Comprobante
-    participant S as Sesion
-    participant V as VentanaPrincipal
 
-    U->>P: elige Tarjeta, completa los datos y toca Pagar
-    P->>C: pagarConTarjeta(numero, titular, mes, anio, codigo, cuotas)
+    U->>+P: elige Tarjeta, completa los datos y toca Pagar
+    P->>+C: pagarConTarjeta(numero, titular, mes, anio, codigo, cuotas)
     C->>C: convertirEntero de mes, anio y cuotas
-    C->>PT: new PagoTarjeta(compraEnCurso.getTotal(), numero, titular, mes, anio, codigo, cuotas)
     alt formato inválido (CU11, 4a)
-        PT--xC: DatosInvalidosException
-        C->>V: mostrarError(e.getMessage())
+        C->>+PT: new PagoTarjeta(compraEnCurso.getTotal(), numero, titular, mes, anio, codigo, cuotas)
+        PT--x-C: DatosInvalidosException
+        C->>+V: mostrarError(e.getMessage())
+        deactivate V
     else formato correcto
-        PT-->>C: pago
-        C->>C: procesarPago(pago)
+        C->>+PT: new PagoTarjeta(compraEnCurso.getTotal(), numero, titular, mes, anio, codigo, cuotas)
+        PT-->>-C: pago
+        C->>+C: procesarPago(pago)
         Note over C: lo que sigue es procesarPago, igual para tarjeta y transferencia
-        C->>Co: registrarPago(pago)
-        Co->>Co: agrega el pago a la lista de intentos
-        Co->>PT: procesar()
-        Note over PT: procesar() es el método plantilla heredado de Pago
-        PT->>PT: autorizar()
-        alt rechazado (CU11, 5a)
-            PT--xCo: PagoException
-            Co--xC: la excepción sigue hasta el controlador
-            C->>V: mostrarError(e.getMessage())
-            Note over P,V: sigue en PantallaPago con la misma compra para reintentar
-        else aprobado
-            PT-->>Co: estado APROBADO
-            Co-->>C: ok
-            C->>Co: confirmar(carrito)
+        C->>+S: getCliente()
+        S-->>-C: cliente
+        Note right of C: cliente.getCarrito() devuelve su carrito
+        alt aprobado
+            C->>+Co: registrarPago(pago)
+            Co->>Co: agrega el pago a la lista de intentos
+            Co->>+PT: procesar()
+            Note over PT: procesar() es el método plantilla heredado de Pago
+            PT->>PT: autorizar()
+            PT-->>-Co: estado APROBADO
+            Co-->>-C: ok
+            C->>+Co: confirmar(carrito)
             loop por cada ItemCarrito
-                Co->>E: ocuparLugares(cantidad)
+                Co->>+E: ocuparLugares(cantidad)
+                deactivate E
                 Co->>Co: crea una Entrada por cada unidad
             end
             Note right of Co: la compra pasa a CONFIRMADA
-            C->>Cl: agregarCompra(compraEnCurso)
-            C->>Co: generarComprobante()
-            Co->>Cb: new Comprobante("C-" + numero, compra)
-            Co-->>C: comprobante
+            deactivate Co
+            C->>+Cl: agregarCompra(compraEnCurso)
+            deactivate Cl
+            C->>+Co: generarComprobante()
+            Co->>+Cb: new Comprobante("C-" + numero, compra)
+            deactivate Cb
+            Co-->>-C: comprobante
             Note right of C: carrito.vaciar() y compraEnCurso = null
-            C->>S: guardar()
-            C->>Cb: generarTexto()
-            Cb-->>C: texto
-            C->>V: mostrarTexto("Comprobante", texto)
-            C->>V: mostrar(EVENTOS_DISPONIBLES)
+            C->>+V: mostrar(EVENTOS_DISPONIBLES)
+            deactivate V
+            C->>+S: guardar()
+            deactivate S
+            Note right of C: lo que sigue está en un finally: se ejecuta aunque falle el guardado
+            C->>+Cb: generarTexto()
+            Cb-->>-C: texto
+            C->>+V: mostrarTexto("Comprobante", texto)
+            deactivate V
+        else rechazado (CU11, 5a)
+            C->>+Co: registrarPago(pago)
+            Co->>Co: agrega el pago a la lista de intentos
+            Co->>+PT: procesar()
+            PT->>PT: autorizar()
+            PT--x-Co: PagoException
+            Co--x-C: la excepción sigue hasta el controlador
+            C->>+V: mostrarError(e.getMessage())
+            deactivate V
+            Note over P,V: sigue en PantallaPago con la misma compra para reintentar
         end
+        deactivate C
     end
+    deactivate C
+    deactivate P
 ```
 
 **Con transferencia** es igual. Cambian solo las dos primeras llamadas: la pantalla llama a `pagarConTransferencia(cbu, numeroOperacion)` y el controlador crea un `new PagoTransferencia(monto, cbu, numeroOperacion)`. Después llama al **mismo** `procesarPago(pago)`. Por eso `procesarPago` recibe un `MedioDePago` y no una clase concreta: no se repite código.
@@ -134,7 +159,7 @@ sequenceDiagram
 6. **Si se aprueba**, el controlador llama a `Compra.confirmar(carrito)`, que vuelve a comprobar que hay un pago aprobado y, por cada ítem, ocupa los lugares en el evento y crea una `Entrada` por unidad, con código `numero-n` (por ejemplo `15-1`, `15-2`). La compra pasa a `CONFIRMADA` (CU10, paso 6).
 7. Recién ahora la compra se agrega al cliente (`Cliente.agregarCompra`) y forma parte del historial.
 8. **CU12:** `Compra.generarComprobante()` crea el `Comprobante` con número `C-15` (GRASP Creador).
-9. Se vacía el carrito (CU10, paso 8), se descarta `compraEnCurso`, se guarda todo y se muestra el texto del comprobante (`Comprobante.generarTexto()`) en un diálogo. Al aceptarlo, el cliente vuelve a la pantalla de eventos.
+9. Se vacía el carrito (CU10, paso 8) y se descarta `compraEnCurso`. Se vuelve a la pantalla de eventos **antes** de guardar: la compra ya terminó y, si fallara el guardado, el cliente no puede quedar en una pantalla de pago sin compra. Después se guarda y se muestra el comprobante (`Comprobante.generarTexto()`) en un diálogo. El comprobante está en un `finally`: si fallara el guardado, el cliente igual lo ve, y después aparece el error.
 
 ## 3. Cancelar el pago (CU11, 2a)
 
@@ -142,14 +167,17 @@ sequenceDiagram
 sequenceDiagram
     actor U as Persona (cliente)
     participant P as PantallaPago
-    participant C as ControladorCompras
     participant V as VentanaPrincipal
+    participant C as ControladorCompras
 
-    U->>P: toca Cancelar pago
-    P->>C: cancelarPago()
+    U->>+P: toca Cancelar pago
+    P->>+C: cancelarPago()
     C->>C: compraEnCurso = null
-    C->>V: mostrar(CARRITO)
+    C->>+V: mostrar(CARRITO)
+    deactivate V
     Note over P,V: la compra nunca se agregó al cliente, así que no queda guardada y el carrito sigue igual
+    deactivate C
+    deactivate P
 ```
 
 ## Elementos, patrones y decisiones

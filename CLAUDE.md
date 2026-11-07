@@ -121,6 +121,13 @@ Cada etapa se considera **terminada** cuando cumple todo esto:
    - p7: vista y controlador
    - p9: navegación
 4. Cada caso de uso implementado tiene su diagrama de secuencia en `docs/diseno/secuencias/CUxx-nombre.md`. Los 5 elegidos para el p8 se enlazan desde `docs/diseno/p8-diagramas-de-secuencia.md`.
+   - **Barras de activación obligatorias** (lo pidió el profesor). Cada objeto muestra su barra mientras ejecuta un método:
+     - Llamada: `A->>+B: metodo()`. Retorno con valor: `B-->>-A: valor`.
+     - Método sin retorno: `A->>+B: metodo()` y después `deactivate B`.
+     - Excepción: `B--x-A: NombreException`.
+   - Las activaciones tienen que quedar balanceadas en orden de lectura. Mermaid no entiende las ramas de un `alt`. Si un objeto devuelve un valor en una rama y lanza una excepción en otra, la llamada se repite dentro de cada rama.
+   - No usar `;` en los textos: Mermaid lo toma como fin de línea.
+   - Antes de commitear, comprobar que el diagrama se dibuja sin errores.
 5. Hay Javadoc y comentarios según las reglas de código.
 6. En `PLAN.md` está marcada la casilla de la etapa.
 

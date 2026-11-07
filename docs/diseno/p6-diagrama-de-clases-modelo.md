@@ -29,6 +29,7 @@ classDiagram
         +getTipo()* String
         +getNombre() String
         +getEmail() String
+        -estaVacio(String texto) boolean
     }
 
     class Cliente {
@@ -59,21 +60,31 @@ classDiagram
         +modificar(nombre, fecha, lugar, capacidad, precioEntrada) void
         +cancelar() void
         +verificarOrganizador(Organizador organizador) void
-        +verificarDisponibilidad(int cantidad) void
+        +verificarDisponibilidad(long cantidad) void
+        +verificarALaVenta() void
         +ocuparLugares(int cantidad) void
         +liberarLugares(int cantidad) void
         +getEntradasDisponibles() int
         +asignarArtista(Artista artista) void
         +quitarArtista(Artista artista) void
         +tieneArtista(Artista artista) boolean
-        +estaActivo() boolean
+        +getNombresArtistas() String
+        +generarDetalle() String
+        +estaVigente() boolean
         +actualizarEstado(LocalDate hoy) void
+        +getId() int
         +getNombre() String
         +getFecha() LocalDate
         +getLugar() String
+        +getCapacidad() int
         +getPrecioEntrada() double
         +getEstado() EstadoEvento
+        +getOrganizador() Organizador
         +getArtistas() List~Artista~
+        -validarDatos(nombre, fecha, lugar, capacidad, precioEntrada) void
+        -guardarDatos(nombre, fecha, lugar, capacidad, precioEntrada) void
+        +verificarVigente(String accion) void
+        -actualizarCupo() void
     }
 
     class EstadoEvento {
@@ -90,8 +101,11 @@ classDiagram
         -String generoMusical
         +Artista(id, nombre, generoMusical)
         +modificar(nombre, generoMusical) void
+        +getId() int
         +getNombre() String
         +getGeneroMusical() String
+        +toString() String
+        -validar(nombre, generoMusical) void
     }
 
     class Carrito {
@@ -100,6 +114,8 @@ classDiagram
         +cambiarCantidad(Evento evento, int cantidad) void
         +quitarItem(Evento evento) void
         -buscarItem(Evento evento) ItemCarrito
+        -buscarItemExistente(Evento evento) ItemCarrito
+        -validarCantidad(int cantidad) void
         +verificarDisponibilidad() void
         +getTotal() double
         +getItems() List~ItemCarrito~
@@ -134,12 +150,14 @@ classDiagram
         +cancelar(LocalDate hoy) void
         +tienePagoAprobado() boolean
         +getPagoAprobado() MedioDePago
+        +getNombresEventos() String
         +getNumero() int
         +getFechaHora() LocalDateTime
         +getCliente() Cliente
         +getEntradas() List~Entrada~
         +getTotal() double
         +getEstado() EstadoCompra
+        -crearEntradas(ItemCarrito item) void
     }
 
     class EstadoCompra {
@@ -159,6 +177,7 @@ classDiagram
         +estaValida() boolean
         +getEvento() Evento
         +getCodigo() String
+        +getPrecio() double
     }
 
     class EstadoEntrada {
@@ -174,6 +193,7 @@ classDiagram
         +Comprobante(numero, compra)
         +generarTexto() String
         +getNumero() String
+        -agregarDetalle(StringBuilder texto) void
     }
 
     class MedioDePago {
@@ -225,10 +245,13 @@ classDiagram
 | Nombre y lugar no vacíos, fecha futura, capacidad > 0, precio ≥ 0 | constructor de `Evento` y `Evento.modificar` | `DatosInvalidosException` |
 | Un evento se crea con al menos un artista (D-002) | constructor de `Evento` | `DatosInvalidosException` |
 | No se puede bajar la capacidad por debajo de lo ya vendido | `Evento.modificar` | `EventoException` |
+| Un evento cancelado o finalizado no se modifica, no se vuelve a cancelar y no se le cambian los artistas | `Evento.verificarVigente` (lo llaman `modificar`, `cancelar`, `asignarArtista` y `quitarArtista`, y también `ControladorEventos` antes de abrir el formulario, la pantalla de artistas del evento o de pedir confirmación) | `EventoException` |
 | Solo el organizador del evento lo puede modificar, cancelar o cambiarle artistas | `Evento.verificarOrganizador` | `EventoException` |
-| No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` | `EventoException` / `SinDisponibilidadException` |
+| No se venden entradas de un evento cancelado, finalizado o sin lugar | `Evento.verificarDisponibilidad` (usa `verificarALaVenta`) | `EventoException` / `SinDisponibilidadException` |
+| Al consultar la disponibilidad, un evento cancelado o finalizado se informa como tal (CU08, 2a y 2b) | `Evento.verificarALaVenta` | `EventoException` |
 | Un artista no se asigna dos veces; un evento conserva al menos un artista | `Evento.asignarArtista` / `Evento.quitarArtista` | `ArtistaException` |
 | No se da de baja un artista asignado a un evento activo | `DatosSistema.eliminarArtista` | `ArtistaException` |
+| No hay dos artistas con el mismo nombre (ni al crear ni al modificar) | `DatosSistema.agregarArtista` / `DatosSistema.modificarArtista` | `ArtistaException` |
 | La cantidad pedida tiene que ser mayor a 0 | `Carrito.agregarItem` / `Carrito.cambiarCantidad` | `DatosInvalidosException` |
 | No se confirma un carrito vacío | `Carrito.verificarDisponibilidad` | `CompraException` |
 | La compra se confirma solo con un pago aprobado | `Compra.confirmar` | `CompraException` |
@@ -270,6 +293,8 @@ classDiagram
         +getDescripcion()* String
         +getMonto() double
         +getEstado() EstadoPago
+        +getFechaHora() LocalDateTime
+        #tieneDigitos(String texto, int cantidad)$ boolean
     }
 
     class PagoTarjeta {
@@ -279,6 +304,8 @@ classDiagram
         +PagoTarjeta(monto, numero, titular, mesVencimiento, anioVencimiento, codigoSeguridad, cuotas)
         #autorizar() boolean
         +getDescripcion() String
+        +getTitular() String
+        -validarVencimiento(int mes, int anio) void
     }
 
     class PagoTransferencia {
@@ -339,12 +366,16 @@ classDiagram
         +generarId() int
         +registrarUsuario(Usuario usuario) void
         +autenticar(String email, String contrasenia) Usuario
+        +estaVacio() boolean
         +agregarEvento(Evento evento) void
         +getEventosDe(Organizador organizador) List~Evento~
         +getEventosDisponibles(LocalDate hoy) List~Evento~
         +agregarArtista(Artista artista) void
+        +modificarArtista(Artista artista, String nombre, String generoMusical) void
         +eliminarArtista(Artista artista) void
         +getArtistas() List~Artista~
+        -buscarUsuario(String email) Usuario
+        -verificarNombreLibre(String nombre, Artista excepto) void
     }
 
     Persistencia <|.. PersistenciaArchivo
@@ -372,6 +403,7 @@ classDiagram
     class Exception
     class SistemaException {
         +SistemaException(String mensaje)
+        +SistemaException(String mensaje, Throwable causa)
     }
     class DatosInvalidosException
     class UsuarioException
@@ -384,7 +416,9 @@ classDiagram
     class ArtistaException
     class CompraException
     class PagoException
-    class PersistenciaException
+    class PersistenciaException {
+        +PersistenciaException(String mensaje, Throwable causa)
+    }
 
     Exception <|-- SistemaException
     SistemaException <|-- DatosInvalidosException
@@ -405,7 +439,7 @@ classDiagram
 | **DatosInvalidosException** | Un dato ingresado tiene mal formato: campo vacío, número negativo, fecha pasada, tarjeta con dígitos de menos. |
 | **UsuarioException** | Email ya registrado o credenciales incorrectas. |
 | **EventoException** | El evento está cancelado o finalizado, o el usuario no es su organizador. |
-| **SinDisponibilidadException** | No quedan entradas suficientes. Guarda cuántas quedan, para que la pantalla le diga al cliente "quedan 3" (CU09, alternativo 3a). |
+| **SinDisponibilidadException** | No quedan entradas suficientes. El mensaje ya dice cuántas quedan (CU09, alternativo 3a), y además guarda el número en `getDisponibles()`, que usan los tests. |
 | **ArtistaException** | Artista ya asignado o existente, intento de quitar el último artista de un evento, o baja de un artista que está en un evento activo. |
 | **CompraException** | Carrito vacío, compra ya cancelada, evento ya realizado, o comprobante sin pago aprobado. |
 | **PagoException** | El pago fue rechazado. |
@@ -443,3 +477,41 @@ Al dibujar el [p8](p8-diagramas-de-secuencia.md) aparecieron métodos que el p6 
 - **`Compra.verificarCancelable(hoy)`:** CU14 pide verificar si se puede cancelar **antes** de pedir confirmación al cliente.
 - **Getters de `Evento`** (`getNombre`, `getFecha`, `getLugar`, `getPrecioEntrada`, `getEstado`, `getArtistas`) y de **`Compra`** (`getNumero`, `getFechaHora`, `getCliente`): los usan las pantallas para armar las tablas, el comprobante y los códigos de las entradas.
 - **`Carrito.buscarItem(evento)`** (privado): evita repetir la búsqueda en `agregarItem`, `cambiarCantidad` y `quitarItem`.
+
+## Cambios hechos al programar el esqueleto (20/10)
+
+Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que el código necesitó, para que p6 y código coincidan:
+
+- **Getters nuevos:** `Evento.getId`, `getCapacidad` (para llenar el formulario de CU04) y `getOrganizador` (lo usa `DatosSistema.getEventosDe`); `Artista.getId`; `Entrada.getPrecio` y `Pago.getFechaHora` (para el comprobante); `PagoTarjeta.getTitular`.
+- **`Artista.toString()`** devuelve el nombre: es lo que muestra una `JList<Artista>` en las pantallas.
+- **`Pago.tieneDigitos(texto, cantidad)`** (protegido y estático): lo usan `PagoTarjeta` y `PagoTransferencia` para validar el número de tarjeta, el código y el CBU sin repetir el mismo `for`.
+- **Métodos privados** para no repetir código: `Evento.validarDatos`, `guardarDatos`, `verificarVigente` y `actualizarCupo`; `Carrito.buscarItemExistente` y `validarCantidad`; `Compra.crearEntradas`; `DatosSistema.buscarUsuario`; `Usuario.estaVacio`; `Artista.validar`; `PagoTarjeta.validarVencimiento`.
+- **`SistemaException` y `PersistenciaException`** tienen un constructor con la excepción original (`causa`), para que `PersistenciaArchivo` envuelva la `IOException` sin perderla.
+- **El monto de un pago puede ser 0** (un evento puede ser gratis, porque el precio puede ser 0). Lo que no puede ser es negativo.
+
+## Cambios hechos al programar artistas y eventos (23/10, etapas E6 y E7)
+
+- **`DatosSistema.modificarArtista(artista, nombre, genero)`** (nuevo): antes, `ControladorArtistas` iba a llamar directo a `Artista.modificar`, pero así se podía renombrar un artista con el nombre de otro. Como para controlarlo hay que recorrer todo el catálogo, lo hace `DatosSistema` (GRASP Experto) y después llama a `Artista.modificar`.
+- **`DatosSistema.verificarNombreLibre`** (privado): la búsqueda de nombre repetido que antes estaba dentro de `agregarArtista`. Ahora la usan `agregarArtista` y `modificarArtista`, así no se repite el `for`.
+- **`Evento.verificarVigente` pasó de privado a público:** el controlador lo llama **antes** de abrir el formulario de modificación (CU04) y antes de preguntar "¿Cancelar el evento?" (CU05). Así no se completa un formulario ni se confirma algo que después va a fallar. Es la misma idea que `Compra.verificarCancelable` en el CU14.
+- **`DatosSistema.getEventosDe`** ahora actualiza el estado de cada evento (`actualizarEstado(hoy)`) antes de devolverlos, igual que `getEventosDisponibles`. Así el organizador ve como `FINALIZADO` un evento cuya fecha ya pasó. La firma no cambió.
+
+
+## Cambios hechos al terminar el programa (06/11, etapas E9 a E14)
+
+- **`Evento.estaVigente()`** reemplaza a `estaActivo()`: dice si el evento está `ACTIVO` o `AGOTADO`. Esa comparación estaba repetida en tres lugares (`Evento.actualizarEstado`, `Evento.actualizarCupo` y `DatosSistema.eliminarArtista`); ahora está en uno solo.
+- **D-008 (aplicada, opción b): el cliente también ve los eventos agotados.** `DatosSistema.getEventosDisponibles` devuelve los vigentes, no solo los activos. La tabla dice "AGOTADO" y el cliente entiende por qué no puede comprar. Así se puede mostrar el flujo 3a del CU08.
+- **`Compra.getNombresEventos()`** (nuevo): nombres de los eventos sin repetir, para la tabla del historial. Si el organizador canceló un evento, lo aclara con "(CANCELADO)" (D-003: la compra no se cancela sola).
+- **`Comprobante.generarTexto()`** se reescribió para incluir todo lo que pide el CU12: email del cliente y, por evento, lugar, cantidad, precio unitario, subtotal y códigos de las entradas. El detalle está en el método privado `agregarDetalle`. Si la compra se canceló, el comprobante lo dice.
+- **`Carrito.agregarItem`** suma las cantidades en un `long`, y `Evento.verificarDisponibilidad` recibe un `long`. Así dos cantidades enormes no desbordan el `int` antes de verificarse.
+- **`Compra.verificarCancelable`** ya no aplica el límite de fecha si el evento fue cancelado: como no se hizo, el cliente puede pedir el reintegro cuando quiera (D-003).
+- **`PagoTarjeta.validarVencimiento`** controla que el año esté entre 1 y 9999. Sin eso, `YearMonth.of` lanzaba una excepción no prevista con un año enorme.
+- **`DatosSistema.estaVacio()`** (nuevo): lo usa `Main` para saber si es la primera vez que se abre el programa.
+- **`DatosDeEjemplo`** (nueva, paquete `persistencia`): carga los usuarios, artistas, eventos y compras de la demo la primera vez. Usa los constructores y métodos del modelo, así que pasa por todas las validaciones. No aparece en el diagrama de la parte 3 porque no es parte del modelo ni de la interfaz `Persistencia`: solo la llama `Main`.
+
+## Cambios hechos al programar la asignación y la consulta (24/10, etapa E8)
+
+- **`Evento.verificarALaVenta()`** (nuevo, público): controla que el evento no esté cancelado ni finalizado, con un mensaje distinto para cada caso, como pide el CU08 (2a: "fue cancelado y no tiene entradas a la venta"; 2b: "ya se realizó"). Antes ese control estaba escrito dentro de `verificarDisponibilidad`; ahora `verificarDisponibilidad` lo llama, así no se repite. Un evento `AGOTADO` pasa el control, porque sigue a la venta aunque no le queden lugares.
+- **`Evento.getNombresArtistas()`** (nuevo): devuelve los nombres de los artistas separados por coma. Lo usan la tabla del cliente (CU07) y el detalle (CU08). Está en `Evento` porque es quien tiene la lista de artistas (GRASP Experto).
+- **`Evento.generarDetalle()`** (nuevo): arma el texto del CU08, paso 4 (nombre, fecha, lugar, artistas, precio y entradas disponibles). Si no quedan entradas, dice "0 (AGOTADO)" (3a). Es la misma idea que `Comprobante.generarTexto()`.
+- **`Evento.asignarArtista` y `quitarArtista` ahora llaman a `verificarVigente`:** la precondición del CU06 dice que el evento no está cancelado. Por eso, además de `ArtistaException`, pueden lanzar `EventoException`. La firma en el diagrama no cambia (las excepciones no se dibujan en los métodos).
