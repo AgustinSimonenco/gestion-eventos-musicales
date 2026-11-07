@@ -2,7 +2,7 @@
 
 ## Cómo abrir el programa
 
-Hace falta un JDK (8 o más nuevo).
+Hace falta un JDK 9 o más nuevo. El código se compila como Java 8 con `--release 8`, una opción que el `javac` de Java 8 no tiene.
 
 | Qué querés hacer | Windows | Linux / Mac / Git Bash |
 |---|---|---|

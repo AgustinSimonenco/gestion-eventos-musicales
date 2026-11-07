@@ -29,7 +29,7 @@ sequenceDiagram
     C-->>-P: compras
     P->>P: comprasMostradas = compras
     loop por cada compra
-        P->>+Co: getNumero(), getFechaHora(), getNombresEventos(), getTotal(), getPagoAprobado(), getEstado()
+        P->>+Co: getNumero(), getFechaHora(), getNombresEventos(), getEntradas(), getTotal(), getPagoAprobado().getEstado(), getEstado()
         Co-->>-P: datos de la compra
         P->>P: modeloTabla.addRow(...)
     end

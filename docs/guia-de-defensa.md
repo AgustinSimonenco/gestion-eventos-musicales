@@ -65,11 +65,12 @@ Las clases están en el [p6](diseno/p6-diagrama-de-clases-modelo.md) y el [p7](d
 11. **¿Qué pasa con las compras si se cancela un evento?** — *No se cancelan solas (D-003). El historial lo avisa con "(CANCELADO)" y el cliente la cancela con el CU14.*
 12. **La contraseña está sin cifrar, ¿por qué?** — *La seguridad no está en el alcance del trabajo. Lo que sí se cuida es la tarjeta: solo se guardan los últimos 4 dígitos y nunca el código.*
 13. **¿Por qué `generarDetalle` y `generarTexto` están en el modelo si arman texto?** — *Es discutible en MVC. Se decidió así porque ese texto usa solo datos del objeto y lo necesitan los controladores, que no usan Swing. La pantalla sigue sin saber cómo se arma.*
-14. **¿Cómo se probó?** — *62 tests JUnit de las reglas del modelo y la persistencia (`probar.bat`). Para probar que algo falla se usa `try` / `fail` / `catch`, porque `assertThrows` necesita una lambda.*
+14. **¿Cómo se probó?** — *64 tests JUnit de las reglas del modelo y la persistencia (`probar.bat`). Para probar que algo falla se usa `try` / `fail` / `catch`, porque `assertThrows` necesita una lambda.*
 
 ## Puntos para mirar con cuidado
 
 - **`Sesion.getCliente()` y `getOrganizador()` hacen un cast.** Es seguro porque, por la navegación (p9), un cliente nunca llega a una pantalla del organizador.
 - **`verificarVigente` y `verificarCancelable` se llaman dos veces a propósito.** En el controlador, para no pedir datos o confirmación en vano; en el modelo, para que la regla se cumpla siempre.
 - **`actualizarEstado` cambia el estado al listar.** El estado no cambia solo con el tiempo, así que se recalcula cada vez que se muestran los eventos.
-- **En `procesarPago` se sale de la pantalla de pago antes de guardar.** La compra ya terminó: si fallara el guardado, el cliente no puede quedar pagando una compra que ya no existe.
+- **En `procesarPago` se sale de la pantalla de pago antes de guardar, y el comprobante va en un `finally`.** La compra ya terminó: si fallara el guardado, el cliente no queda pagando una compra que ya no existe y ve igual su comprobante.
+- **El reintegro de un evento cancelado no vence.** `Compra.verificarCancelable` no aplica el límite de fecha si el evento fue cancelado, porque no se hizo (D-003).

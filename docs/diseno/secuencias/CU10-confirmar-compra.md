@@ -35,7 +35,7 @@ sequenceDiagram
         deactivate E
     end
     Ca-->>-C: ok, o CompraException / EventoException / SinDisponibilidadException
-    alt carrito vacío (1a) o un evento cancelado o sin lugar (4a)
+    alt carrito vacío (1a) o un evento cancelado o sin lugar (2a)
         C->>+V: mostrarError(e.getMessage())
         deactivate V
         Note over P,V: se queda en PantallaCarrito sin cobrar
@@ -52,7 +52,7 @@ sequenceDiagram
             C->>+V: mostrar(PAGO)
             deactivate V
             Note over V: PantallaPago.actualizar() pide getMontoAPagar() para mostrar el monto
-        else no acepta (3a)
+        else no acepta (4a)
             Note over P,V: se queda en PantallaCarrito para modificarlo
         end
     end
@@ -63,7 +63,7 @@ sequenceDiagram
 ### Paso a paso
 
 1. **`ControladorCompras.iniciarCompra`** busca el carrito del cliente y le pide `verificarDisponibilidad()`.
-2. **`Carrito.verificarDisponibilidad`** lanza `CompraException` si está vacío (1a). Si no, le pide a **cada** evento `verificarDisponibilidad(cantidad)`. Se verifica de nuevo aunque ya se verificó al agregar (CU09), porque desde entonces el organizador pudo cancelar un evento (4a).
+2. **`Carrito.verificarDisponibilidad`** lanza `CompraException` si está vacío (1a). Si no, le pide a **cada** evento `verificarDisponibilidad(cantidad)`. Se verifica de nuevo aunque ya se verificó al agregar (CU09), porque desde entonces el organizador pudo cancelar un evento (2a).
 3. **`armarResumen`** (método privado del controlador) arma un texto con cada evento, cantidad y subtotal, y el total. La ventana lo muestra con `confirmar(resumen)`: un diálogo de sí o no.
 4. **Si el cliente acepta**, se crea la `Compra` en estado `PENDIENTE` con el total del carrito y se guarda en `compraEnCurso`. Todavía **no** se agrega al cliente ni se guarda en el archivo: si el cliente se arrepiente, simplemente se descarta.
 
@@ -95,6 +95,9 @@ sequenceDiagram
         PT-->>-C: pago
         C->>+C: procesarPago(pago)
         Note over C: lo que sigue es procesarPago, igual para tarjeta y transferencia
+        C->>+S: getCliente()
+        S-->>-C: cliente
+        Note right of C: cliente.getCarrito() devuelve su carrito
         alt aprobado
             C->>+Co: registrarPago(pago)
             Co->>Co: agrega el pago a la lista de intentos
@@ -122,6 +125,7 @@ sequenceDiagram
             deactivate V
             C->>+S: guardar()
             deactivate S
+            Note right of C: lo que sigue está en un finally: se ejecuta aunque falle el guardado
             C->>+Cb: generarTexto()
             Cb-->>-C: texto
             C->>+V: mostrarTexto("Comprobante", texto)
@@ -155,7 +159,7 @@ sequenceDiagram
 6. **Si se aprueba**, el controlador llama a `Compra.confirmar(carrito)`, que vuelve a comprobar que hay un pago aprobado y, por cada ítem, ocupa los lugares en el evento y crea una `Entrada` por unidad, con código `numero-n` (por ejemplo `15-1`, `15-2`). La compra pasa a `CONFIRMADA` (CU10, paso 6).
 7. Recién ahora la compra se agrega al cliente (`Cliente.agregarCompra`) y forma parte del historial.
 8. **CU12:** `Compra.generarComprobante()` crea el `Comprobante` con número `C-15` (GRASP Creador).
-9. Se vacía el carrito (CU10, paso 8) y se descarta `compraEnCurso`. Se vuelve a la pantalla de eventos **antes** de guardar: la compra ya terminó y, si fallara el guardado, el cliente no puede quedar en una pantalla de pago sin compra. Después se guarda y se muestra el comprobante (`Comprobante.generarTexto()`) en un diálogo.
+9. Se vacía el carrito (CU10, paso 8) y se descarta `compraEnCurso`. Se vuelve a la pantalla de eventos **antes** de guardar: la compra ya terminó y, si fallara el guardado, el cliente no puede quedar en una pantalla de pago sin compra. Después se guarda y se muestra el comprobante (`Comprobante.generarTexto()`) en un diálogo. El comprobante está en un `finally`: si fallara el guardado, el cliente igual lo ve, y después aparece el error.
 
 ## 3. Cancelar el pago (CU11, 2a)
 

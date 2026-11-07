@@ -79,12 +79,11 @@ Cuando hay un error, el cliente **se queda en `PantallaEventosDisponibles`** par
 2. **`ControladorCarrito.agregarAlCarrito`** convierte la cantidad a número, busca el carrito del cliente que inició sesión y llama a `Carrito.agregarItem`.
 3. **`Carrito.agregarItem`**:
    - Si la cantidad es 0 o negativa, lanza `DatosInvalidosException` (2a).
-   - Verifica la cantidad nueva sola con `Evento.verificarDisponibilidad`. Así un número enorme se rechaza antes de sumarlo y el `int` no se desborda.
-   - Con `buscarItem(evento)` se fija si ese evento ya está en el carrito. Si está, la cantidad a verificar es la que ya tenía **más** la nueva. Así no se puede esquivar el límite agregando de a poco.
+   - Con `buscarItem(evento)` se fija si ese evento ya está en el carrito. Si está, la cantidad a verificar es la que ya tenía **más** la nueva. Así no se puede esquivar el límite agregando de a poco. La suma se hace en un `long`, para que dos cantidades enormes no desborden el `int`.
    - Le pide al evento `verificarDisponibilidad(cantidadTotal)`. **Esto es CU08 incluido en CU09.**
 4. **`Evento.verificarDisponibilidad`** revisa, en este orden:
-   - si está `CANCELADO` o ya pasó su fecha → `EventoException` ("El evento fue cancelado", "El evento ya se realizó");
-   - si `getEntradasDisponibles()` (capacidad menos vendidas) es menor que lo pedido → `SinDisponibilidadException`, con un mensaje "Quedan N entradas" y el número guardado en `getDisponibles()` (3a).
+   - con `verificarALaVenta()`, si su estado es `CANCELADO` o `FINALIZADO` → `EventoException` ("El evento X fue cancelado y no tiene entradas a la venta.", "El evento X ya se realizó y no está disponible.");
+   - si `getEntradasDisponibles()` (capacidad menos vendidas) es menor que lo pedido → `SinDisponibilidadException`, con el mensaje "Para X quedan solo N entradas." y el número guardado en `getDisponibles()` (3a).
 5. **Si hay lugar**, el carrito actualiza el ítem existente o crea uno nuevo (GRASP Creador: el carrito contiene los ítems).
 6. El controlador guarda (el carrito se guarda dentro del `Cliente`) y muestra `PantallaCarrito`, que recalcula subtotales y total.
 

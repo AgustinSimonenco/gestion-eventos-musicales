@@ -60,7 +60,7 @@ classDiagram
         +modificar(nombre, fecha, lugar, capacidad, precioEntrada) void
         +cancelar() void
         +verificarOrganizador(Organizador organizador) void
-        +verificarDisponibilidad(int cantidad) void
+        +verificarDisponibilidad(long cantidad) void
         +verificarALaVenta() void
         +ocuparLugares(int cantidad) void
         +liberarLugares(int cantidad) void
@@ -439,7 +439,7 @@ classDiagram
 | **DatosInvalidosException** | Un dato ingresado tiene mal formato: campo vacío, número negativo, fecha pasada, tarjeta con dígitos de menos. |
 | **UsuarioException** | Email ya registrado o credenciales incorrectas. |
 | **EventoException** | El evento está cancelado o finalizado, o el usuario no es su organizador. |
-| **SinDisponibilidadException** | No quedan entradas suficientes. Guarda cuántas quedan, para que la pantalla le diga al cliente "quedan 3" (CU09, alternativo 3a). |
+| **SinDisponibilidadException** | No quedan entradas suficientes. El mensaje ya dice cuántas quedan (CU09, alternativo 3a), y además guarda el número en `getDisponibles()`, que usan los tests. |
 | **ArtistaException** | Artista ya asignado o existente, intento de quitar el último artista de un evento, o baja de un artista que está en un evento activo. |
 | **CompraException** | Carrito vacío, compra ya cancelada, evento ya realizado, o comprobante sin pago aprobado. |
 | **PagoException** | El pago fue rechazado. |
@@ -503,7 +503,8 @@ Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que 
 - **D-008 (aplicada, opción b): el cliente también ve los eventos agotados.** `DatosSistema.getEventosDisponibles` devuelve los vigentes, no solo los activos. La tabla dice "AGOTADO" y el cliente entiende por qué no puede comprar. Así se puede mostrar el flujo 3a del CU08.
 - **`Compra.getNombresEventos()`** (nuevo): nombres de los eventos sin repetir, para la tabla del historial. Si el organizador canceló un evento, lo aclara con "(CANCELADO)" (D-003: la compra no se cancela sola).
 - **`Comprobante.generarTexto()`** se reescribió para incluir todo lo que pide el CU12: email del cliente y, por evento, lugar, cantidad, precio unitario, subtotal y códigos de las entradas. El detalle está en el método privado `agregarDetalle`. Si la compra se canceló, el comprobante lo dice.
-- **`Carrito.agregarItem`** ahora verifica primero la cantidad nueva sola. Así un número enorme se rechaza antes de sumarlo, y el `int` no se desborda.
+- **`Carrito.agregarItem`** suma las cantidades en un `long`, y `Evento.verificarDisponibilidad` recibe un `long`. Así dos cantidades enormes no desbordan el `int` antes de verificarse.
+- **`Compra.verificarCancelable`** ya no aplica el límite de fecha si el evento fue cancelado: como no se hizo, el cliente puede pedir el reintegro cuando quiera (D-003).
 - **`PagoTarjeta.validarVencimiento`** controla que el año esté entre 1 y 9999. Sin eso, `YearMonth.of` lanzaba una excepción no prevista con un año enorme.
 - **`DatosSistema.estaVacio()`** (nuevo): lo usa `Main` para saber si es la primera vez que se abre el programa.
 - **`DatosDeEjemplo`** (nueva, paquete `persistencia`): carga los usuarios, artistas, eventos y compras de la demo la primera vez. Usa los constructores y métodos del modelo, así que pasa por todas las validaciones. No aparece en el diagrama de la parte 3 porque no es parte del modelo ni de la interfaz `Persistencia`: solo la llama `Main`.

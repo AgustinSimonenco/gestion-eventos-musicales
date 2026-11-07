@@ -137,6 +137,7 @@ classDiagram
         -JTextField campoLugar
         -JTextField campoCapacidad
         -JTextField campoPrecio
+        -DefaultListModel~Artista~ modeloArtistas
         -JList~Artista~ listaArtistas
         -JPanel panelArtistas
         -JButton botonGuardar
@@ -160,8 +161,6 @@ classDiagram
         -JButton botonVolver
         +actualizar() void
         +actionPerformed(ActionEvent e) void
-        -crearLista(DefaultListModel~Artista~ modelo) JList~Artista~
-        -armarColumna(String nombre, JList~Artista~ lista, JButton boton) JPanel
     }
     class PantallaArtistas {
         -DefaultTableModel modeloTabla
@@ -274,7 +273,7 @@ classDiagram
 
 ### Pantallas y qué controlador usa cada una
 
-Para no llenar el diagrama de flechas, la relación pantalla → controlador va en esta tabla. Cada pantalla recibe su controlador en el constructor y lo guarda en un atributo `controlador`.
+Para no llenar el diagrama de flechas, la relación pantalla → controlador va en esta tabla. Cada pantalla recibe su controlador en el constructor y lo guarda en un atributo `controlador`. Tampoco se dibujan los constructores de las pantallas ni los métodos privados que solo acomodan los componentes (`armar`, `armarColumna` y parecidos).
 
 | Pantalla | Para qué sirve | Controlador | Casos de uso |
 |---|---|---|---|
@@ -297,7 +296,7 @@ Para no llenar el diagrama de flechas, la relación pantalla → controlador va 
   - Tiene los métodos para hablar con el usuario usando `JOptionPane`: `mostrarMensaje`, `mostrarError`, `confirmar` (sí/no) y `mostrarTexto` (el comprobante, en un área de texto). Así ningún controlador usa Swing directamente.
 - **`Pantalla`** es la clase abstracta de todas las pantallas (`JPanel`). Tiene la referencia a la ventana y obliga a cada pantalla a implementar `actualizar()`. Gracias a esto, `VentanaPrincipal.mostrar` funciona igual con cualquier pantalla (**polimorfismo**).
 - **Cada pantalla implementa `ActionListener`** (regla del proyecto: nada de lambdas ni clases anónimas). En `actionPerformed` se pregunta qué botón se tocó (`e.getSource() == botonX`) y se llama a **un** método del controlador. No hay ninguna regla de negocio en las pantallas.
-  - **Excepción: los botones que solo cambian de pantalla** y no llevan datos (*Registrarse* en el login; *Volver* en el registro, el formulario, artistas y artistas del evento; *Gestionar artistas*; *Nuevo artista*) llaman directo a `ventana.mostrar(...)`. Pasar por el controlador sería un método que no hace nada más que eso. *Nuevo* sí pasa por el controlador, porque tiene que poner `eventoSeleccionado` en `null` (modo crear).
+  - **Excepción: los botones que solo cambian de pantalla** y no llevan datos (*Registrarse* en el login; *Volver* en el registro, el formulario, artistas y artistas del evento; *Gestionar artistas*; *Nuevo artista*; *Carrito*; *Mis compras*; *Seguir comprando*; *Volver* en el historial) llaman directo a `ventana.mostrar(...)`. Pasar por el controlador sería un método que no hace nada más que eso. *Nuevo* sí pasa por el controlador, porque tiene que poner `eventoSeleccionado` en `null` (modo crear).
   - **`PantallaArtistas` también implementa `ListSelectionListener`**: es otra interfaz de Swing (mismo patrón Observer), con la que la tabla avisa cuando se elige otra fila. Se usa para copiar el nombre y el género a los campos.
 - **Tablas:** cada pantalla con tabla guarda la lista de objetos que muestra (`eventosMostrados`, `artistasMostrados`) en el mismo orden que las filas. Así, la fila elegida (`getSelectedRow()`) da directamente el objeto que se le pasa al controlador. Si no hay ninguna fila elegida, la pantalla muestra "Elegí un evento de la tabla." y no llama al controlador (p9).
 - **Listas de `PantallaAsignarArtistas`:** son `JList<Artista>` con un `DefaultListModel`, igual que en el formulario, pero se elige **un artista por vez**. `getSelectedValue()` devuelve directamente el `Artista` elegido, o `null` si no hay ninguno (en ese caso la pantalla avisa y no llama al controlador). La lista de registrados muestra **todo** el catálogo, también los que ya están en el evento: si se elige uno de esos, el modelo avisa que ya está (CU06, 3a).
@@ -443,7 +442,7 @@ classDiagram
   public void agregarAlCarrito(Evento evento, String textoCantidad) {
       try {
           int cantidad = convertirEntero(textoCantidad, "La cantidad");
-          sesion.getCliente().getCarrito().agregarItem(evento, cantidad);
+          getCarrito().agregarItem(evento, cantidad);
           sesion.guardar();
           ventana.mostrar(VentanaPrincipal.CARRITO);
       } catch (SistemaException e) {

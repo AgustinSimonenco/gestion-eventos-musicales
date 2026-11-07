@@ -92,8 +92,9 @@ stateDiagram-v2
     Carrito --> Carrito : Cambiar cantidad / Quitar (CU09, 5a)
     Carrito --> Eventos : Seguir comprando
 
+    Carrito --> Carrito : Confirmar compra, un evento ya no tiene lugar (CU10, 2a)
     Carrito --> Resumen : Confirmar compra (CU10)
-    Resumen --> Carrito : No acepta (3a) / un evento ya no tiene lugar (4a)
+    Resumen --> Carrito : No acepta (4a)
     Resumen --> Pago : Acepta
 
     Pago --> Pago : Pagar, pago rechazado (CU11, 5a)
@@ -118,7 +119,7 @@ stateDiagram-v2
 - *Carrito*, *Mis compras*, *Seguir comprando* y *Volver* solo cambian de pantalla: la pantalla llama directo a `ventana.mostrar(...)`.
 - **Historial vacío (CU13, 2a):** la tabla queda vacía y arriba dice "Todavía no hiciste ninguna compra.".
 - **Agregar al carrito con error** (cantidad 0, sin lugar): se muestra el error (por ejemplo "quedan 3 entradas") y **se queda en `PantallaEventosDisponibles`** para corregir la cantidad (CU09, 2a y 3a).
-- **Confirmar compra (CU10):** `ControladorCompras.iniciarCompra` primero verifica el carrito. Si un evento fue cancelado o ya no tiene lugar, muestra el error y se queda en el carrito sin cobrar (4a). Si está todo bien, muestra el resumen con `confirmar(...)`; si el cliente acepta, se crea la compra `PENDIENTE` y se pasa a `PantallaPago`.
+- **Confirmar compra (CU10):** `ControladorCompras.iniciarCompra` primero verifica el carrito. Si un evento fue cancelado o ya no tiene lugar, muestra el error y se queda en el carrito sin cobrar (2a). Si está todo bien, muestra el resumen con `confirmar(...)`; si el cliente acepta, se crea la compra `PENDIENTE` y se pasa a `PantallaPago`.
 - **Pago rechazado (CU11, 5a):** se muestra el motivo y se queda en `PantallaPago`, con la misma compra en curso. El cliente puede reintentar con otro medio o tocar *Cancelar pago*.
 - **Pago aprobado:** se confirma la compra, se genera el comprobante, se vacía el carrito, se vuelve al inicio del cliente y, encima, se muestra el comprobante en un diálogo.
 - **Cancelar compra (CU14):** antes de mostrar el diálogo de confirmación, el controlador verifica que se pueda cancelar. Si la compra ya estaba cancelada o el evento es hoy o ya pasó, se muestra el error y se queda en `PantallaHistorial`, sin preguntar nada (ver [secuencia de CU14](secuencias/CU14-cancelar-compra.md)).

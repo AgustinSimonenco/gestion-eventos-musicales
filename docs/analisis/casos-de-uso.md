@@ -190,17 +190,17 @@ flowchart LR
 - **Precondición:** El cliente inició sesión y su carrito tiene al menos un ítem.
 - **Flujo principal:**
   1. El cliente solicita confirmar la compra.
-  2. El sistema muestra el resumen: eventos, cantidades, subtotales y total.
-  3. El cliente acepta el resumen.
-  4. El sistema verifica que cada evento siga activo y con capacidad suficiente.
+  2. El sistema verifica que cada evento siga activo y con capacidad suficiente.
+  3. El sistema muestra el resumen: eventos, cantidades, subtotales y total.
+  4. El cliente acepta el resumen.
   5. Se ejecuta Realizar Pago.
   6. El sistema registra la compra y genera una entrada por cada unidad comprada, asociada al cliente y al evento.
   7. Se genera el comprobante.
   8. El carrito se vacía.
 - **Alternativos:**
   - 1a. El carrito está vacío → el sistema informa que no hay entradas para comprar.
-  - 3a. El cliente no acepta el resumen → se realizan modificaciones.
-  - 4a. Un evento fue cancelado o ya no tiene capacidad suficiente → el sistema informa qué ítem tiene problemas y vuelve al carrito sin cobrar.
+  - 2a. Un evento fue cancelado o ya no tiene capacidad suficiente → el sistema informa qué ítem tiene problemas y vuelve al carrito sin cobrar.
+  - 4a. El cliente no acepta el resumen → se realizan modificaciones.
   - 5a. El pago es rechazado → no se registra la compra ni se generan entradas; el carrito se conserva para reintentar.
 
 ### CU11 — Realizar pago
@@ -212,7 +212,7 @@ flowchart LR
   2. El cliente elige el medio de pago.
   3. El cliente ingresa los datos correspondientes:
      - **Tarjeta:** número, titular, vencimiento, código de seguridad y cantidad de cuotas.
-     - **Transferencia:** CBU/alias de origen y número de comprobante.
+     - **Transferencia:** CBU de origen (22 dígitos) y número de operación.
   4. El sistema valida el formato de los datos.
   5. El sistema procesa el pago.
   6. El sistema registra el pago como APROBADO e informa el resultado.
@@ -240,10 +240,10 @@ flowchart LR
 
 ### CU13 — Consultar historial de compras
 - **Actor:** Cliente
-- **Descripción:** Muestra todas las entradas adquiridas anteriormente.
+- **Descripción:** Muestra todas las compras realizadas anteriormente.
 - **Flujo principal:**
   1. El cliente solicita su historial.
-  2. El sistema muestra las entradas con evento, fecha de compra, precio y estado del pago.
+  2. El sistema muestra una fila por compra con número, fecha de compra, eventos, cantidad de entradas, total, estado del pago y estado de la compra. Los códigos de las entradas están en el comprobante.
 - **Alternativo:** 2a. El cliente no tiene compras → el sistema informa que el historial está vacío.
 
 ### CU14 — Cancelar compra
@@ -252,13 +252,13 @@ flowchart LR
 - **Precondición:** El cliente inició sesión y tiene al menos una compra confirmada.
 - **Flujo principal:**
   1. El cliente selecciona una compra desde su historial.
-  2. El sistema verifica que la fecha del evento no haya pasado.
+  2. El sistema verifica que falte al menos un día para el evento, salvo que el evento haya sido cancelado (D-003).
   3. El sistema muestra el detalle y el monto a reintegrar, y pide confirmación.
   4. El cliente confirma la cancelación.
   5. El sistema anula las entradas de la compra y libera su capacidad en el evento.
   6. El sistema marca la compra como CANCELADA y registra el reintegro.
 - **Alternativos:**
-  - 2a. El evento ya se realizó → el sistema informa que la compra no se puede cancelar.
+  - 2a. El evento es hoy o ya se realizó → el sistema informa que la compra no se puede cancelar.
   - 2b. La compra ya estaba cancelada → el sistema lo informa.
   - 4a. El cliente no confirma → no se realiza ningún cambio.
 

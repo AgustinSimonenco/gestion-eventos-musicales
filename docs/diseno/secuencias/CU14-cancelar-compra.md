@@ -24,7 +24,7 @@ sequenceDiagram
     alt se puede cancelar
         C->>+Co: verificarCancelable(hoy)
         Co-->>-C: ok
-        C->>+V: confirmar("¿Cancelar la compra? Se reintegran $ total")
+        C->>+V: confirmar("¿Cancelar la compra N.º ... de ...? Se reintegran $ total")
         V-->>-C: true o false
         alt el cliente confirma
             C->>+Co: cancelar(hoy)
@@ -37,13 +37,13 @@ sequenceDiagram
             end
             Note right of Co: la compra pasa a CANCELADA
             deactivate Co
+            C->>+V: mostrar(HISTORIAL)
+            deactivate V
+            Note over V: PantallaHistorial.actualizar() pide getHistorial() y la compra aparece como CANCELADA
             C->>+S: guardar()
             deactivate S
             C->>+V: mostrarMensaje("Compra cancelada. Se reintegran $ total")
             deactivate V
-            C->>+V: mostrar(HISTORIAL)
-            deactivate V
-            Note over V: PantallaHistorial.actualizar() pide getHistorial() y la compra aparece como CANCELADA
         else no confirma (4a)
             Note over P,V: no cambia nada
         end
@@ -63,14 +63,14 @@ sequenceDiagram
 2. **`ControladorCompras.cancelarCompra`** toma la fecha de hoy y le pregunta a la compra si se puede cancelar **antes** de pedir confirmación, para seguir el orden del caso de uso: primero se verifica (paso 2) y después se pregunta (paso 3).
 3. **`Compra.verificarCancelable(hoy)`** lanza `CompraException` si:
    - la compra ya está `CANCELADA` (2b), o
-   - alguna de sus entradas es de un evento cuya fecha es hoy o ya pasó (2a). RF15 dice "antes de la fecha del evento", así que el mismo día ya no se puede.
+   - alguna de sus entradas es de un evento cuya fecha es hoy o ya pasó (2a). RF15 dice "antes de la fecha del evento", así que el mismo día ya no se puede. Si el evento fue cancelado, este límite no se aplica.
 4. Si se puede, la ventana muestra el monto (`compra.getTotal()`) y pregunta sí o no. Si el cliente dice que no (4a), no se toca nada.
 5. **`Compra.cancelar(hoy)`** vuelve a llamar a `verificarCancelable` (así la regla se cumple aunque otro código llame a `cancelar` sin verificar antes). Después, por cada entrada:
    - `Entrada.anular()` la pasa a `ANULADA`;
    - `Evento.liberarLugares(1)` resta una entrada vendida, y si el evento estaba `AGOTADO` vuelve a `ACTIVO`.
 
    Al final, la compra pasa a `CANCELADA`.
-6. El controlador guarda y muestra el mensaje con el reintegro. El historial se recarga y muestra la compra cancelada.
+6. El controlador recarga el historial, que muestra la compra cancelada, y después guarda. Va en ese orden para que la tabla diga la verdad aunque falle el guardado. Por último muestra el mensaje con el reintegro.
 
 ## Elementos, patrones y decisiones
 
@@ -82,4 +82,4 @@ sequenceDiagram
 
 - **La fecha de hoy la pasa el controlador** (`LocalDate.now()`), en lugar de que `Compra` la busque sola. Así, en los tests de la E13 se puede probar con cualquier fecha.
 - **El reintegro no mueve dinero** (ver p1: el pago es simulado). Queda registrado porque la compra pasa a `CANCELADA` con su total (ver D-006 en la bitácora del 19/10).
-- **Si el evento fue cancelado por el organizador**, la compra se puede cancelar igual, siempre que su fecha no haya llegado (D-003).
+- **Si el evento fue cancelado por el organizador**, la compra se puede cancelar en cualquier momento, aunque su fecha ya haya pasado: el evento no se hizo, así que el reintegro no vence (D-003).
