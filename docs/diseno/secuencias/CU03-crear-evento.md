@@ -18,12 +18,13 @@ sequenceDiagram
     participant PE as Persistencia
 
     O->>+P: completa los datos, elige artistas y toca Guardar
-    P->>P: actionPerformed(e)
+    P->>P: actionPerformed(e) y guardar()
     Note right of P: modo crear, porque no hay evento seleccionado
     P->>+C: crearEvento(nombre, fecha, lugar, capacidad, precio, artistas)
     C->>C: convertirFecha(fecha)
     C->>C: convertirEntero(capacidad, "La capacidad")
     C->>C: convertirDecimal(precio, "El precio")
+    Note right of C: si un texto no se puede convertir, se lanza DatosInvalidosException y se pasa directo al catch, que llama a mostrarError
     C->>+S: getDatos()
     S-->>-C: datos
     C->>+S: getOrganizador()
@@ -40,7 +41,7 @@ sequenceDiagram
         S->>+PE: guardar(datos)
         deactivate PE
         deactivate S
-        C->>+V: mostrarMensaje("Evento creado")
+        C->>+V: mostrarMensaje("Evento creado.")
         deactivate V
         C->>+V: mostrar(MIS_EVENTOS)
         deactivate V

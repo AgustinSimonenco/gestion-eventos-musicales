@@ -36,7 +36,7 @@ sequenceDiagram
     loop por cada evento
         P->>+E: getNombre(), getFecha(), getLugar(), getNombresArtistas(), getPrecioEntrada(), getEntradasDisponibles()
         E-->>-P: datos del evento
-        P->>P: modeloTabla.addRow(...)
+        P->>P: textoDisponibles(evento) y modeloTabla.addRow(...)
     end
     alt no hay ninguno (2a)
         P->>P: etiquetaAviso = "Por ahora no hay eventos disponibles."

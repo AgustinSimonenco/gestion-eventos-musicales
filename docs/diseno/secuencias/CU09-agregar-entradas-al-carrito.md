@@ -18,15 +18,17 @@ sequenceDiagram
     participant I as ItemCarrito
 
     U->>+P: elige un evento, escribe la cantidad y toca Agregar al carrito
-    P->>P: actionPerformed(e)
-    P->>P: evento = eventosMostrados.get(fila elegida)
+    P->>P: actionPerformed(e) y getEventoElegido()
     P->>+C: agregarAlCarrito(evento, textoCantidad)
     C->>C: convertirEntero(textoCantidad, "La cantidad")
+    Note right of C: si un texto no se puede convertir, se lanza DatosInvalidosException y se pasa directo al catch, que llama a mostrarError
+    C->>C: getCarrito()
     C->>+S: getCliente()
     S-->>-C: cliente
     Note right of C: cliente.getCarrito() devuelve su carrito
     alt hay lugar
         C->>+Ca: agregarItem(evento, cantidad)
+        Ca->>Ca: validarCantidad(cantidad)
         Ca->>Ca: buscarItem(evento)
         Note right of Ca: si el evento ya está en el carrito, se verifica la suma de las dos cantidades
         Ca->>+E: verificarDisponibilidad(cantidadTotal)
@@ -36,7 +38,7 @@ sequenceDiagram
             Ca->>+I: setCantidad(cantidadTotal)
             deactivate I
         else es un evento nuevo en el carrito
-            Ca->>+I: new ItemCarrito(evento, cantidad)
+            Ca->>+I: new ItemCarrito(evento, cantidadTotal)
             deactivate I
         end
         Ca-->>-C: ok
@@ -47,12 +49,13 @@ sequenceDiagram
         Note over V: PantallaCarrito.actualizar() muestra cada ítem con getSubtotal() y el total con getTotal()
     else cantidad 0 o negativa (2a)
         C->>+Ca: agregarItem(evento, cantidad)
+        Ca->>Ca: validarCantidad(cantidad)
         Ca--x-C: DatosInvalidosException
         C->>+V: mostrarError(e.getMessage())
         deactivate V
     else evento cancelado o ya realizado
         C->>+Ca: agregarItem(evento, cantidad)
-        Ca->>Ca: buscarItem(evento)
+        Ca->>Ca: validarCantidad(cantidad) y buscarItem(evento)
         Ca->>+E: verificarDisponibilidad(cantidadTotal)
         E--x-Ca: EventoException
         Ca--x-C: la excepción sigue hasta el controlador
@@ -60,7 +63,7 @@ sequenceDiagram
         deactivate V
     else no alcanzan las entradas (3a)
         C->>+Ca: agregarItem(evento, cantidad)
-        Ca->>Ca: buscarItem(evento)
+        Ca->>Ca: validarCantidad(cantidad) y buscarItem(evento)
         Ca->>+E: verificarDisponibilidad(cantidadTotal)
         E--x-Ca: SinDisponibilidadException con las que quedan
         Ca--x-C: la excepción sigue hasta el controlador

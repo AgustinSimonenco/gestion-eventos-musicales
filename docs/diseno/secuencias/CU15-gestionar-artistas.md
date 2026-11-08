@@ -78,36 +78,72 @@ sequenceDiagram
 
     alt toca Modificar (2a)
         O->>+P: corrige los campos y toca Modificar
+        P->>P: actionPerformed(e) y getArtistaElegido()
         P->>+C: modificarArtista(artista, nombre, genero)
-        C->>+D: modificarArtista(artista, nombre, genero)
-        D->>D: verificarNombreLibre(nombre, artista)
-        D->>+A: modificar(nombre, genero)
-        deactivate A
-        deactivate D
-        C->>+S: guardar()
-        deactivate S
-        C->>+V: mostrarMensaje("Se guardaron los cambios de ...")
-        deactivate V
-        C->>+V: mostrar(ARTISTAS)
-        deactivate V
+        C->>+S: getDatos()
+        S-->>-C: datos
+        alt nombre libre y datos completos
+            C->>+D: modificarArtista(artista, nombre, genero)
+            D->>D: verificarNombreLibre(nombre, artista)
+            D->>+A: modificar(nombre, genero)
+            A->>A: validar(nombre, genero)
+            deactivate A
+            deactivate D
+            C->>+S: guardar()
+            deactivate S
+            C->>+V: mostrarMensaje("Se guardaron los cambios de ...")
+            deactivate V
+            C->>+V: mostrar(ARTISTAS)
+            deactivate V
+        else otro artista ya tiene ese nombre (3a)
+            C->>+D: modificarArtista(artista, nombre, genero)
+            D->>D: verificarNombreLibre(nombre, artista)
+            D--x-C: ArtistaException
+            C->>+V: mostrarError(e.getMessage())
+            deactivate V
+        else nombre o género vacío (3a)
+            C->>+D: modificarArtista(artista, nombre, genero)
+            D->>D: verificarNombreLibre(nombre, artista)
+            D->>+A: modificar(nombre, genero)
+            A->>A: validar(nombre, genero)
+            A--x-D: DatosInvalidosException
+            D--x-C: la excepción sigue hasta el controlador
+            C->>+V: mostrarError(e.getMessage())
+            deactivate V
+        end
         deactivate C
         deactivate P
     else toca Baja (2b)
         O->>+P: toca Baja
+        P->>P: actionPerformed(e) y getArtistaElegido()
         P->>+C: bajaArtista(artista)
         C->>+V: confirmar("¿Dar de baja a ...?")
-        V-->>-C: true
-        C->>+D: eliminarArtista(artista)
-        loop por cada evento
-            D->>D: ¿está ACTIVO o AGOTADO y tiene al artista?
+        V-->>-C: true o false
+        alt elige Sí y el artista no está en un evento vigente
+            C->>+S: getDatos()
+            S-->>-C: datos
+            C->>+D: eliminarArtista(artista)
+            loop por cada evento
+                D->>D: evento.estaVigente() y evento.tieneArtista(artista)
+            end
+            D->>D: artistas.remove(artista)
+            deactivate D
+            C->>+S: guardar()
+            deactivate S
+            C->>+V: mostrarMensaje("Se dio de baja a ...")
+            deactivate V
+            C->>+V: mostrar(ARTISTAS)
+            deactivate V
+        else elige Sí y el artista está en un evento ACTIVO o AGOTADO (2b)
+            C->>+S: getDatos()
+            S-->>-C: datos
+            C->>+D: eliminarArtista(artista)
+            D--x-C: ArtistaException
+            C->>+V: mostrarError(e.getMessage())
+            deactivate V
+        else elige No
+            Note over C: no se cambia nada
         end
-        deactivate D
-        C->>+S: guardar()
-        deactivate S
-        C->>+V: mostrarMensaje("Se dio de baja a ...")
-        deactivate V
-        C->>+V: mostrar(ARTISTAS)
-        deactivate V
         deactivate C
         deactivate P
     end

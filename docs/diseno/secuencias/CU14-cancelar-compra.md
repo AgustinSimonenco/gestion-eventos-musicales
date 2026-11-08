@@ -18,7 +18,7 @@ sequenceDiagram
     participant E as Evento
 
     U->>+P: elige una compra y toca Cancelar compra
-    P->>P: compra = comprasMostradas.get(fila elegida)
+    P->>P: actionPerformed(e) y getCompraElegida()
     P->>+C: cancelarCompra(compra)
     C->>C: hoy = LocalDate.now()
     alt se puede cancelar

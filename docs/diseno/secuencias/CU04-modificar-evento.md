@@ -48,8 +48,10 @@ sequenceDiagram
     deactivate PM
 
     O->>+PF: corrige los datos y toca Guardar
+    PF->>PF: actionPerformed(e) y guardar()
     PF->>+C: modificarEvento(nombre, fecha, lugar, capacidad, precio)
     C->>C: convertirFecha / convertirEntero / convertirDecimal
+    Note right of C: si un texto no se puede convertir, se lanza DatosInvalidosException y se pasa directo al catch, que llama a mostrarError
     alt datos válidos
         C->>+E: modificar(nombre, fecha, lugar, capacidad, precio)
         E->>E: verificarVigente, validarDatos, capacidad >= vendidas

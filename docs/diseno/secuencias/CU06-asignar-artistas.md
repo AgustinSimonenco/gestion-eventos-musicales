@@ -72,16 +72,18 @@ sequenceDiagram
         C->>+E: asignarArtista(artista)
         E->>E: verificarVigente(...) y tieneArtista(artista)
         E--x-C: ArtistaException
-        C->>+V: mostrarError("... ya está en el evento.")
+        C->>+V: mostrarError(e.getMessage())
         deactivate V
     end
     deactivate C
     deactivate PA
 
     O->>+PA: elige un artista del evento y toca Quitar del evento (3c)
+    PA->>PA: actionPerformed(e) y listaAsignados.getSelectedValue()
     PA->>+C: quitarArtista(artista)
     alt le quedan otros artistas
         C->>+E: quitarArtista(artista)
+        E->>E: verificarVigente(...) y tieneArtista(artista)
         E->>E: artistas.remove(artista)
         deactivate E
         C->>+S: guardar()
@@ -94,8 +96,9 @@ sequenceDiagram
         deactivate V
     else es el último artista del evento
         C->>+E: quitarArtista(artista)
+        E->>E: verificarVigente(...) y tieneArtista(artista)
         E--x-C: ArtistaException
-        C->>+V: mostrarError("El evento tiene que tener al menos un artista.")
+        C->>+V: mostrarError(e.getMessage())
         deactivate V
     end
     deactivate C

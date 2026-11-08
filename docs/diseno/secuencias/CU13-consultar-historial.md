@@ -19,6 +19,7 @@ sequenceDiagram
     participant Cb as Comprobante
 
     U->>+PE: toca Mis compras
+    PE->>PE: actionPerformed(e)
     PE->>+V: mostrar(HISTORIAL)
     V->>+P: actualizar()
     P->>+C: getHistorial()
@@ -41,6 +42,7 @@ sequenceDiagram
     deactivate PE
 
     U->>+P: elige una compra y toca Ver comprobante (CU12)
+    P->>P: actionPerformed(e) y getCompraElegida()
     P->>+C: verComprobante(compra)
     C->>+Co: generarComprobante()
     Note right of Co: devuelve el que ya se creó al pagar

@@ -24,6 +24,7 @@ sequenceDiagram
     participant Co as Compra
 
     U->>+P: toca Confirmar compra
+    P->>P: actionPerformed(e)
     P->>+C: iniciarCompra()
     C->>+S: getCliente()
     S-->>-C: cliente
@@ -83,8 +84,10 @@ sequenceDiagram
     participant Cb as Comprobante
 
     U->>+P: elige Tarjeta, completa los datos y toca Pagar
+    P->>P: actionPerformed(e) y pagar()
     P->>+C: pagarConTarjeta(numero, titular, mes, anio, codigo, cuotas)
     C->>C: convertirEntero de mes, anio y cuotas
+    Note right of C: si un texto no se puede convertir, se lanza DatosInvalidosException y se pasa directo al catch, que llama a mostrarError
     alt formato inválido (CU11, 4a)
         C->>+PT: new PagoTarjeta(compraEnCurso.getTotal(), numero, titular, mes, anio, codigo, cuotas)
         PT--x-C: DatosInvalidosException
@@ -171,6 +174,7 @@ sequenceDiagram
     participant C as ControladorCompras
 
     U->>+P: toca Cancelar pago
+    P->>P: actionPerformed(e)
     P->>+C: cancelarPago()
     C->>C: compraEnCurso = null
     C->>+V: mostrar(CARRITO)

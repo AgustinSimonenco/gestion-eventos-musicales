@@ -50,7 +50,7 @@ flowchart LR
 
 ```mermaid
 classDiagram
-    direction TB
+    direction LR
 
     class JFrame
     class JPanel
@@ -77,6 +77,7 @@ classDiagram
         -CardLayout tarjetas
         -JPanel contenedor
         -Map~String, Pantalla~ pantallas
+        +VentanaPrincipal()
         +agregarPantalla(String nombre, Pantalla pantalla) void
         +mostrar(String nombre) void
         +mostrarMensaje(String mensaje) void
@@ -88,6 +89,7 @@ classDiagram
     class Pantalla {
         <<abstract>>
         #VentanaPrincipal ventana
+        -DateTimeFormatter FORMATO_FECHA$
         +Pantalla(VentanaPrincipal ventana)
         +actualizar()* void
         #crearTitulo(String texto) JLabel
@@ -102,8 +104,11 @@ classDiagram
         -JPasswordField campoContrasenia
         -JButton botonIngresar
         -JButton botonRegistrarse
+        -ControladorUsuarios controlador
+        +PantallaLogin(VentanaPrincipal ventana, ControladorUsuarios controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
+        -armar() void
     }
     class PantallaRegistro {
         -JTextField campoNombre
@@ -112,8 +117,11 @@ classDiagram
         -JComboBox~String~ comboTipo
         -JButton botonRegistrar
         -JButton botonVolver
+        -ControladorUsuarios controlador
+        +PantallaRegistro(VentanaPrincipal ventana, ControladorUsuarios controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
+        -armar() void
     }
     class PantallaMisEventos {
         -JLabel etiquetaBienvenida
@@ -126,9 +134,13 @@ classDiagram
         -JButton botonArtistasEvento
         -JButton botonGestionarArtistas
         -JButton botonCerrarSesion
+        -ControladorEventos controlador
+        -ControladorUsuarios controladorUsuarios
+        +PantallaMisEventos(VentanaPrincipal ventana, ControladorEventos controlador, ControladorUsuarios controladorUsuarios)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         -getEventoElegido() Evento
+        -armar() void
     }
     class PantallaFormularioEvento {
         -JLabel titulo
@@ -144,10 +156,13 @@ classDiagram
         -JButton botonNuevoArtista
         -JButton botonVolver
         -boolean modoModificar
+        -ControladorEventos controlador
+        +PantallaFormularioEvento(VentanaPrincipal ventana, ControladorEventos controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         -cargarArtistas() void
         -guardar() void
+        -armar() void
     }
     class PantallaAsignarArtistas {
         -JLabel titulo
@@ -159,8 +174,13 @@ classDiagram
         -JButton botonQuitar
         -JButton botonNuevoArtista
         -JButton botonVolver
+        -ControladorEventos controlador
+        +PantallaAsignarArtistas(VentanaPrincipal ventana, ControladorEventos controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
+        -crearLista(DefaultListModel~Artista~ modelo) JList~Artista~
+        -armar() void
+        -armarColumna(String nombre, JList~Artista~ lista, JButton boton) JPanel
     }
     class PantallaArtistas {
         -DefaultTableModel modeloTabla
@@ -172,10 +192,13 @@ classDiagram
         -JButton botonModificar
         -JButton botonBaja
         -JButton botonVolver
+        -ControladorArtistas controlador
+        +PantallaArtistas(VentanaPrincipal ventana, ControladorArtistas controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         +valueChanged(ListSelectionEvent e) void
         -getArtistaElegido() Artista
+        -armar() void
     }
     class PantallaEventosDisponibles {
         -JLabel etiquetaBienvenida
@@ -189,10 +212,14 @@ classDiagram
         -JButton botonCarrito
         -JButton botonMisCompras
         -JButton botonCerrarSesion
+        -ControladorCarrito controlador
+        -ControladorUsuarios controladorUsuarios
+        +PantallaEventosDisponibles(VentanaPrincipal ventana, ControladorCarrito controlador, ControladorUsuarios controladorUsuarios)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         -textoDisponibles(Evento evento) String
         -getEventoElegido() Evento
+        -armar() void
     }
     class PantallaCarrito {
         -DefaultTableModel modeloTabla
@@ -204,9 +231,13 @@ classDiagram
         -JButton botonQuitar
         -JButton botonConfirmar
         -JButton botonSeguirComprando
+        -ControladorCarrito controlador
+        -ControladorCompras controladorCompras
+        +PantallaCarrito(VentanaPrincipal ventana, ControladorCarrito controlador, ControladorCompras controladorCompras)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         -getItemElegido() ItemCarrito
+        -armar() void
     }
     class PantallaPago {
         -JLabel etiquetaMonto
@@ -224,10 +255,16 @@ classDiagram
         -JTextField campoOperacion
         -JButton botonPagar
         -JButton botonCancelarPago
+        -ControladorCompras controlador
+        +PantallaPago(VentanaPrincipal ventana, ControladorCompras controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         -mostrarFormularioElegido() void
         -pagar() void
+        -crearOpciones() void
+        -crearCampos() void
+        -armarFormularios() void
+        -armar() void
     }
     class PantallaHistorial {
         -JLabel etiquetaAviso
@@ -237,9 +274,12 @@ classDiagram
         -JButton botonVerComprobante
         -JButton botonCancelarCompra
         -JButton botonVolver
+        -ControladorCompras controlador
+        +PantallaHistorial(VentanaPrincipal ventana, ControladorCompras controlador)
         +actualizar() void
         +actionPerformed(ActionEvent e) void
         -getCompraElegida() Compra
+        -armar() void
     }
 
     JFrame <|-- VentanaPrincipal
@@ -273,7 +313,7 @@ classDiagram
 
 ### Pantallas y qué controlador usa cada una
 
-Para no llenar el diagrama de flechas, la relación pantalla → controlador va en esta tabla. Cada pantalla recibe su controlador en el constructor y lo guarda en un atributo `controlador`. Tampoco se dibujan los constructores de las pantallas ni los métodos privados que solo acomodan los componentes (`armar`, `armarColumna` y parecidos).
+Para no llenar el diagrama de flechas, la relación pantalla → controlador va en esta tabla. Cada pantalla recibe su controlador en el constructor y lo guarda en un atributo `controlador`.
 
 | Pantalla | Para qué sirve | Controlador | Casos de uso |
 |---|---|---|---|
@@ -329,6 +369,7 @@ classDiagram
         <<abstract>>
         #Sesion sesion
         #VentanaPrincipal ventana
+        -DateTimeFormatter FORMATO_FECHA$
         +Controlador(Sesion sesion, VentanaPrincipal ventana)
         #convertirEntero(String texto, String campo) int
         #convertirDecimal(String texto, String campo) double
@@ -338,6 +379,7 @@ classDiagram
     class ControladorUsuarios {
         +String TIPO_CLIENTE$
         +String TIPO_ORGANIZADOR$
+        +ControladorUsuarios(Sesion sesion, VentanaPrincipal ventana)
         +registrar(nombre, email, contrasenia, tipo) void
         +iniciarSesion(email, contrasenia) void
         +cerrarSesion() void
@@ -347,6 +389,7 @@ classDiagram
 
     class ControladorEventos {
         -Evento eventoSeleccionado
+        +ControladorEventos(Sesion sesion, VentanaPrincipal ventana)
         +getMisEventos() List~Evento~
         +getArtistas() List~Artista~
         +getEventoSeleccionado() Evento
@@ -361,6 +404,7 @@ classDiagram
     }
 
     class ControladorArtistas {
+        +ControladorArtistas(Sesion sesion, VentanaPrincipal ventana)
         +getArtistas() List~Artista~
         +altaArtista(nombre, genero) void
         +modificarArtista(Artista artista, nombre, genero) void
@@ -368,16 +412,18 @@ classDiagram
     }
 
     class ControladorCarrito {
+        +ControladorCarrito(Sesion sesion, VentanaPrincipal ventana)
         +getEventosDisponibles() List~Evento~
         +consultarDisponibilidad(Evento evento) void
-        +agregarAlCarrito(Evento evento, String cantidad) void
-        +cambiarCantidad(Evento evento, String cantidad) void
+        +agregarAlCarrito(Evento evento, String textoCantidad) void
+        +cambiarCantidad(Evento evento, String textoCantidad) void
         +quitarItem(Evento evento) void
         +getCarrito() Carrito
     }
 
     class ControladorCompras {
         -Compra compraEnCurso
+        +ControladorCompras(Sesion sesion, VentanaPrincipal ventana)
         +iniciarCompra() void
         +getMontoAPagar() double
         +pagarConTarjeta(numero, titular, mes, anio, codigo, cuotas) void
@@ -404,6 +450,12 @@ classDiagram
         <<interface>>
     }
     class SistemaException
+    class DatosInvalidosException
+    class Main {
+        -String ARCHIVO_DATOS$
+        +main(String[] args)$ void
+        -armarPantallas(Sesion sesion, VentanaPrincipal ventana)$ void
+    }
 
     Controlador <|-- ControladorUsuarios
     Controlador <|-- ControladorEventos
@@ -424,7 +476,16 @@ classDiagram
     ControladorCarrito ..> Evento
     ControladorCompras --> Compra : en curso
     ControladorCompras ..> MedioDePago : crea PagoTarjeta o PagoTransferencia
-    Controlador ..> SistemaException : captura
+    Controlador ..> DatosInvalidosException : lanza
+    ControladorUsuarios ..> SistemaException : captura
+    ControladorEventos ..> SistemaException : captura
+    ControladorArtistas ..> SistemaException : captura
+    ControladorCarrito ..> SistemaException : captura
+    ControladorCompras ..> SistemaException : captura
+    ControladorUsuarios ..> Usuario
+    ControladorCompras ..> Carrito
+    Main ..> Sesion : crea
+    Main ..> VentanaPrincipal : crea
 ```
 
 ### Descripción

@@ -131,7 +131,7 @@ stateDiagram-v2
 |---|---|---|---|
 | PantallaLogin | todos | inicio, *Cerrar sesión*, registro | CU02 |
 | PantallaRegistro | todos | login | CU01 |
-| PantallaMisEventos | organizador | login, *Volver* | CU04, CU05 |
+| PantallaMisEventos | organizador | login, *Volver* | CU02 (menú), CU03 (*Nuevo*), CU04, CU05, CU06 |
 | PantallaFormularioEvento | organizador | mis eventos | CU03, CU04 |
 | PantallaAsignarArtistas | organizador | mis eventos | CU06 |
 | PantallaArtistas | organizador | mis eventos, formulario, asignación | CU15 |

@@ -35,6 +35,7 @@ classDiagram
     class Cliente {
         -Carrito carrito
         -List~Compra~ compras
+        +Cliente(String nombre, String email, String contrasenia)
         +getTipo() String
         +getCarrito() Carrito
         +agregarCompra(Compra compra) void
@@ -42,6 +43,7 @@ classDiagram
     }
 
     class Organizador {
+        +Organizador(String nombre, String email, String contrasenia)
         +getTipo() String
     }
 
@@ -56,6 +58,7 @@ classDiagram
         -EstadoEvento estado
         -Organizador organizador
         -List~Artista~ artistas
+        -DateTimeFormatter FORMATO_FECHA$
         +Evento(id, nombre, fecha, lugar, capacidad, precioEntrada, organizador, artistas)
         +modificar(nombre, fecha, lugar, capacidad, precioEntrada) void
         +cancelar() void
@@ -110,6 +113,7 @@ classDiagram
 
     class Carrito {
         -List~ItemCarrito~ items
+        +Carrito()
         +agregarItem(Evento evento, int cantidad) void
         +cambiarCantidad(Evento evento, int cantidad) void
         +quitarItem(Evento evento) void
@@ -216,6 +220,7 @@ classDiagram
     Entrada "0..*" --> "1" Evento : es para
     Compra "1" o-- "0..*" MedioDePago : se paga con
     Compra "1" *-- "0..1" Comprobante : genera
+    Comprobante "0..1" --> "1" Compra : detalla
     Compra --> EstadoCompra
     Entrada --> EstadoEntrada
 ```
@@ -363,6 +368,7 @@ classDiagram
         -List~Evento~ eventos
         -List~Artista~ artistas
         -int ultimoId
+        +DatosSistema()
         +generarId() int
         +registrarUsuario(Usuario usuario) void
         +autenticar(String email, String contrasenia) Usuario
@@ -378,7 +384,16 @@ classDiagram
         -verificarNombreLibre(String nombre, Artista excepto) void
     }
 
+    class DatosDeEjemplo {
+        -String CONTRASENIA$
+        +cargarEn(DatosSistema datos)$ void
+        -agregarArtista(DatosSistema datos, String nombre, String genero)$ Artista
+        -agregarEvento(DatosSistema datos, String nombre, int diasDesdeHoy, String lugar, int capacidad, double precio, Organizador organizador, Artista... artistas)$ Evento
+        -comprar(DatosSistema datos, Cliente cliente, Evento evento, int cantidad)$ void
+    }
+
     Persistencia <|.. PersistenciaArchivo
+    DatosDeEjemplo ..> DatosSistema : carga los datos iniciales
     Persistencia ..> DatosSistema : carga y guarda
     DatosSistema o-- Usuario
     DatosSistema o-- Evento
@@ -405,17 +420,29 @@ classDiagram
         +SistemaException(String mensaje)
         +SistemaException(String mensaje, Throwable causa)
     }
-    class DatosInvalidosException
-    class UsuarioException
-    class EventoException
+    class DatosInvalidosException {
+        +DatosInvalidosException(String mensaje)
+    }
+    class UsuarioException {
+        +UsuarioException(String mensaje)
+    }
+    class EventoException {
+        +EventoException(String mensaje)
+    }
     class SinDisponibilidadException {
         -int disponibles
         +SinDisponibilidadException(String mensaje, int disponibles)
         +getDisponibles() int
     }
-    class ArtistaException
-    class CompraException
-    class PagoException
+    class ArtistaException {
+        +ArtistaException(String mensaje)
+    }
+    class CompraException {
+        +CompraException(String mensaje)
+    }
+    class PagoException {
+        +PagoException(String mensaje)
+    }
     class PersistenciaException {
         +PersistenciaException(String mensaje, Throwable causa)
     }
@@ -507,7 +534,7 @@ Al escribir el código de la etapa E4 se agregaron al diagrama los métodos que 
 - **`Compra.verificarCancelable`** ya no aplica el límite de fecha si el evento fue cancelado: como no se hizo, el cliente puede pedir el reintegro cuando quiera (D-003).
 - **`PagoTarjeta.validarVencimiento`** controla que el año esté entre 1 y 9999. Sin eso, `YearMonth.of` lanzaba una excepción no prevista con un año enorme.
 - **`DatosSistema.estaVacio()`** (nuevo): lo usa `Main` para saber si es la primera vez que se abre el programa.
-- **`DatosDeEjemplo`** (nueva, paquete `persistencia`): carga los usuarios, artistas, eventos y compras de la demo la primera vez. Usa los constructores y métodos del modelo, así que pasa por todas las validaciones. No aparece en el diagrama de la parte 3 porque no es parte del modelo ni de la interfaz `Persistencia`: solo la llama `Main`.
+- **`DatosDeEjemplo`** (nueva, paquete `persistencia`): carga los usuarios, artistas, eventos y compras de la demo la primera vez. Usa los constructores y métodos del modelo, así que pasa por todas las validaciones. Está en el diagrama de la parte 3 y solo la llama `Main`.
 
 ## Cambios hechos al programar la asignación y la consulta (24/10, etapa E8)
 
